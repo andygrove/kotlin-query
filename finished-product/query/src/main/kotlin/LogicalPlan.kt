@@ -1,18 +1,20 @@
 package kquery;
 
-sealed class Expr {
+interface Expr {
+    fun toField(input: LogicalPlan): Field
 }
 
-class Column(val name: String): Expr()
-class ColumnIndex(val i: Int): Expr()
-class LiteralInt(val n: Int): Expr()
-class Add(val expr: Expr) : Expr()
-class Subtract(val expr: Expr) : Expr()
-class Multiply(val expr: Expr) : Expr()
-class Divide(val expr: Expr) : Expr()
-class Eq(val l: Expr, val r: Expr) : Expr()
-class And(val l: Expr, val r: Expr) : Expr()
-class Or(val l: Expr, val r: Expr) : Expr()
+class Column(val i: Int): Expr {
+    override fun toField(input: LogicalPlan): Field {
+        return input.schema().fields[i]
+    }
+}
+
+class LiteralLong(val n: Long): Expr {
+    override fun toField(input: LogicalPlan): Field {
+        return Field(n.toString(), DataType.Long)
+    }
+}
 
 interface LogicalPlan {
     fun schema(): Schema
@@ -20,7 +22,7 @@ interface LogicalPlan {
 
 class Projection(val input: LogicalPlan, val expr: List<Expr>): LogicalPlan {
     override fun schema(): Schema {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return Schema(expr.map { it.toField(input) })
     }
 }
 
@@ -44,4 +46,4 @@ enum class DataType {
 
 data class Field(val name: String, val dataType: DataType)
 
-class Schema(val fields: Field)
+class Schema(val fields: List<Field>)
