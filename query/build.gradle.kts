@@ -24,6 +24,9 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
     testImplementation("junit:junit:4.12")
 
+    implementation("org.apache.arrow:arrow-memory:0.16.0")
+    implementation("org.apache.arrow:arrow-vector:0.16.0")
+
 }
 
 
