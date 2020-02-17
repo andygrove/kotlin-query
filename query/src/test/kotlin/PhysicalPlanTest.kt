@@ -24,10 +24,9 @@ class PhysicalPlanTest {
         // print the plan
         println(format(projection))
 
-        val execDs = DataSourceExec(csv, 0.rangeTo(6).toList())
-        val execProjection = ProjectionExec(execDs, projection)
+        val physicalPlan = QueryPlanner().createPhysicalPlan(projection)
 
-        execProjection.execute().forEach { batch ->
+        physicalPlan.execute().forEach { batch ->
             println("got batch with ${batch.schema.fields.size} columns and ${batch.field(0).valueCount} rows")
         }
     }

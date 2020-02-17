@@ -7,7 +7,6 @@ import org.apache.arrow.vector.types.pojo.Schema
 
 interface Expr {
     fun toField(input: LogicalPlan): Field
-    fun evaluate(input: RecordBatch): FieldVector
 }
 
 class Column(val i: Int): Expr {
@@ -20,9 +19,6 @@ class Column(val i: Int): Expr {
         return "#$i"
     }
 
-    override fun evaluate(input: RecordBatch): FieldVector {
-        return input.field(i)
-    }
 }
 
 class LiteralString(val str: String): Expr {
@@ -35,9 +31,6 @@ class LiteralString(val str: String): Expr {
         return str
     }
 
-    override fun evaluate(input: RecordBatch): FieldVector {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 }
 
 class LiteralLong(val n: Long): Expr {
@@ -50,9 +43,6 @@ class LiteralLong(val n: Long): Expr {
         return n.toString()
     }
 
-    override fun evaluate(input: RecordBatch): FieldVector {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 }
 
 class Eq(val l: Expr, val r: Expr): Expr {
@@ -65,9 +55,6 @@ class Eq(val l: Expr, val r: Expr): Expr {
         return "$l = $r"
     }
 
-    override fun evaluate(input: RecordBatch): FieldVector {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
 }
 
 interface AggregateExpr {

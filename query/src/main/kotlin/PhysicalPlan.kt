@@ -1,7 +1,19 @@
 package kquery
 
+import org.apache.arrow.vector.FieldVector
 import org.apache.arrow.vector.VectorSchemaRoot
 import org.apache.arrow.vector.types.pojo.Schema
+
+interface PhysicalExpr {
+    fun evaluate(input: RecordBatch): FieldVector
+}
+
+class ColumnExpr(val column: Column) : PhysicalExpr {
+    override fun evaluate(input: RecordBatch): FieldVector {
+        return input.field(column.i)
+    }
+}
+
 
 interface PhysicalPlan {
     fun execute(): Iterable<RecordBatch>
@@ -16,12 +28,21 @@ class DataSourceExec(val ds: DataSource, val projection: List<Int>) : PhysicalPl
     }
 }
 
-class ProjectionExec(val input: PhysicalPlan, val projection: Projection) : PhysicalPlan {
+class ProjectionExec(val input: PhysicalPlan, val schema: Schema, val expr: List<PhysicalExpr>) : PhysicalPlan {
 
     override fun execute(): Iterable<RecordBatch> {
         return input.execute().map { batch ->
-            val fieldVectors = projection.expr.map { it.evaluate(batch) }
-            RecordBatch(projection.schema(), VectorSchemaRoot(fieldVectors))
+            val fieldVectors = expr.map { it.evaluate(batch) }
+            RecordBatch(schema, VectorSchemaRoot(fieldVectors))
+        }
+    }
+}
+
+class SelectionExec(val input: PhysicalPlan, val selection: Selection) : PhysicalPlan {
+    override fun execute(): Iterable<RecordBatch> {
+        return input.execute().filter { batch ->
+            //TODO evaluate expression
+            true
         }
     }
 }
