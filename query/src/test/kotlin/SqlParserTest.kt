@@ -15,6 +15,7 @@ class SqlParserTest {
 
         val select = ast as SqlSelect
         assertEquals(listOf(Identifier("a")), select.projection)
+        assertEquals("b", select.tableName)
     }
 
     private fun tokenize(sql: String) : TokenStream {

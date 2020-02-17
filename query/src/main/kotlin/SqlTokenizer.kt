@@ -34,6 +34,15 @@ class TokenStream(val tokens: List<Token>) {
             return null
         }
     }
+
+    fun consumeKeyword(s: String): Boolean {
+        return if (peek() == KeywordToken(s)) {
+            i++
+            true
+        } else {
+            false
+        }
+    }
 }
 
 class Tokenizer(val sql: String) {

@@ -20,7 +20,7 @@ data class Identifier(val id: String) : SqlExpr {
 
 interface SqlRelation : SqlExpr
 
-data class SqlSelect(val projection: List<SqlExpr>) : SqlRelation
+data class SqlSelect(val projection: List<SqlExpr>, val tableName: String) : SqlRelation
 
 /**
  * Pratt Top Down Operator Precedence Parser. See https://tdop.github.io/ for paper.
@@ -85,7 +85,12 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
 
     private fun parseSelect() : SqlSelect {
         val projection = parseExprList()
-        return SqlSelect(projection)
+        if (tokens.consumeKeyword("FROM")) {
+            val table = parseExpr() as Identifier
+            return SqlSelect(projection, table.id)
+        } else {
+            throw IllegalStateException("Expected FROM keyword")
+        }
     }
 
     private fun parseExprList() : List<SqlExpr> {
@@ -108,7 +113,10 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         var token = tokens.peek()
         when (token) {
             is KeywordToken -> return null
-            is IdentifierToken -> return Identifier(token.toString())
+            is IdentifierToken -> {
+                tokens.next()
+                return Identifier(token.toString())
+            }
             else -> TODO()
         }
     }
