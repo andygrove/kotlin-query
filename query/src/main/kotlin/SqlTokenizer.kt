@@ -2,38 +2,6 @@ package kquery
 
 import java.lang.IllegalStateException
 
-interface SqlExpr
-
-class Identifier : SqlExpr
-class Literal : SqlExpr
-class Function : SqlExpr
-class BinaryExpr : SqlExpr
-class UnaryExpr : SqlExpr
-class CastExpr : SqlExpr
-class AliasExpr : SqlExpr
-
-interface SqlRelation
-
-class SqlTable : SqlRelation
-
-/**
- * Pratt Top Down Operator Precedence Parser. See https://tdop.github.io/ for paper.
- */
-interface PrattParser {
-
-    fun nextPrecedence(): Int
-    fun parsePrefix(): SqlExpr?
-    fun parseInfix(left: SqlExpr, precendence: Int): SqlExpr
-
-    fun parse(precedence: Int = 0): SqlExpr? {
-        var left = parsePrefix()
-        while (precedence < nextPrecedence()) {
-            left = parseInfix(left!!, nextPrecedence())
-        }
-        return left
-    }
-}
-
 interface Token
 data class IdentifierToken(val s: String) : Token
 data class LiteralStringToken(val s: String) : Token
@@ -41,20 +9,41 @@ data class LiteralLongToken(val s: String) : Token
 data class KeywordToken(val s: String) : Token
 data class OperatorToken(val s: String) : Token
 
+class TokenStream(val tokens: List<Token>) {
+
+    var i = 0
+
+    fun peek() : Token? {
+        if (i < tokens.size) {
+            return tokens[i]
+        } else {
+            return null
+        }
+    }
+
+    fun next() : Token? {
+        if (i < tokens.size) {
+            return tokens[i++]
+        } else {
+            return null
+        }
+    }
+}
+
 class Tokenizer(val sql: String) {
 
     val keywords = listOf("SELECT", "FROM", "WHERE", "AND", "OR", "NOT", "GROUP", "ORDER", "BY")
 
     var i = 0
 
-    fun tokenize(): List<Token> {
+    fun tokenize(): TokenStream {
         var token = nextToken()
         val list = mutableListOf<Token>()
         while (token != null) {
             list.add(token)
             token = nextToken()
         }
-        return list
+        return TokenStream(list)
     }
 
     private fun nextToken(): Token? {
