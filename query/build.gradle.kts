@@ -26,13 +26,14 @@ dependencies {
 
     implementation("org.apache.arrow:arrow-memory:0.16.0")
     implementation("org.apache.arrow:arrow-vector:0.16.0")
+    implementation("com.github.doyaaaaaken:kotlin-csv-jvm:0.7.3")
 
 }
 
-
-tasks.test {
-    useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
-    }
-}
+//
+//tasks.test {
+//    useJUnitPlatform()
+//    testLogging {
+//        events("passed", "skipped", "failed")
+//    }
+//}

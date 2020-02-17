@@ -8,32 +8,27 @@ interface DataFrame {
     /** Apply a filter */
     fun filter(expr: Expr): DataFrame
 
-    /** Read a parquet data source at the given path */
-    fun parquet(filename: String): DataFrame
-
     /** Execute the query and collect the results */
     fun collect(): Iterator<RecordBatch>
 
 }
 
-interface RecordBatch {
-    //TODO
+class ExecutionContext {
+
+    fun csv(filename: String, batchSize: Int = 1000): DataFrame {
+        return DataFrameImpl(Scan(filename, CsvDataSource(filename, batchSize), listOf()))
+    }
+
 }
 
-
-
-class DefaultDataFrame : DataFrame {
+class DataFrameImpl(val plan: LogicalPlan) : DataFrame {
 
     override fun select(expr: List<Expr>): DataFrame {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return DataFrameImpl(Projection(plan, expr))
     }
 
     override fun filter(expr: Expr): DataFrame {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-
-    override fun parquet(filename: String): DataFrame {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return DataFrameImpl(Selection(plan, expr))
     }
 
     override fun collect(): Iterator<RecordBatch> {
