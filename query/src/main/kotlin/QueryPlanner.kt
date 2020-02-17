@@ -7,12 +7,12 @@ class QueryPlanner {
     /**
      * Create a physical plan from a logical plan.
      */
-    fun createPhysicalPlan(plan: LogicalPlan, input: PhysicalPlan? = null) : PhysicalPlan {
+    fun createPhysicalPlan(plan: LogicalPlan) : PhysicalPlan {
         return when (plan) {
-            is DataSource -> DataSourceExec(plan, listOf())
-            is Selection -> SelectionExec(createPhysicalPlan(plan.input), plan)
+            is Scan -> DataSourceExec(plan.dataSource, plan.projection)
+            is Selection -> SelectionExec(createPhysicalPlan(plan.input), createPhysicalExpr(plan.expr))
             is Projection -> ProjectionExec(createPhysicalPlan(plan.input), plan.schema(), plan.expr.map { createPhysicalExpr(it) })
-            else -> throw IllegalStateException()
+            else -> throw IllegalStateException(plan.javaClass.toString())
         }
     }
 
@@ -22,7 +22,7 @@ class QueryPlanner {
     fun createPhysicalExpr(expr: Expr): PhysicalExpr {
         return when (expr) {
             is Column -> ColumnExpr(expr)
-            else -> throw IllegalStateException()
+            else -> throw IllegalStateException(expr.javaClass.toString())
         }
 
     }

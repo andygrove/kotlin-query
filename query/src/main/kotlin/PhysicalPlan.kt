@@ -1,8 +1,10 @@
 package kquery
 
+import org.apache.arrow.vector.BitVector
 import org.apache.arrow.vector.FieldVector
 import org.apache.arrow.vector.VectorSchemaRoot
 import org.apache.arrow.vector.types.pojo.Schema
+import java.lang.IllegalStateException
 
 interface PhysicalExpr {
     fun evaluate(input: RecordBatch): FieldVector
@@ -38,12 +40,21 @@ class ProjectionExec(val input: PhysicalPlan, val schema: Schema, val expr: List
     }
 }
 
-class SelectionExec(val input: PhysicalPlan, val selection: Selection) : PhysicalPlan {
+class SelectionExec(val input: PhysicalPlan, val expr: PhysicalExpr) : PhysicalPlan {
     override fun execute(): Iterable<RecordBatch> {
-        return input.execute().filter { batch ->
-            //TODO evaluate expression
-            true
+        return input.execute().map { batch ->
+            when (expr.evaluate(batch)) {
+                is BitVector -> {
+                    //TODO implement
+                    throw IllegalStateException()
+                }
+                else -> throw IllegalStateException()
+            }
         }
     }
 }
+
+//class HashAggregateExec(val input: PhysicalPlan, ): PhysicalPlan {
+//
+//}
 
