@@ -13,7 +13,8 @@ class SqlParserTest {
         val ast = SqlParser(tokens).parse()
         println(ast)
 
-
+        val select = ast as SqlSelect
+        assertEquals(listOf(Identifier("a")), select.projection)
     }
 
     private fun tokenize(sql: String) : TokenStream {

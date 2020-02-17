@@ -3,7 +3,14 @@ package kquery
 import java.lang.IllegalStateException
 
 interface SqlExpr
-data class Identifier(val id: String) : SqlExpr
+
+/** Simple identifier such as a table or column name */
+data class Identifier(val id: String) : SqlExpr {
+    override fun toString(): String {
+        return id
+    }
+}
+
 //data class Literal() : SqlExpr
 //data class Function() : SqlExpr
 //data class BinaryExpr() : SqlExpr
@@ -67,8 +74,6 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         } else {
             throw IllegalStateException("Unexpected token $token")
         }
-
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
     override fun parseInfix(left: SqlExpr, precendence: Int): SqlExpr {
@@ -85,6 +90,26 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
 
     private fun parseExprList() : List<SqlExpr> {
         val list = mutableListOf<SqlExpr>()
+        var expr = parseExpr()
+        while (expr != null) {
+            list.add(expr)
+            if (tokens.peek() == OperatorToken(",")) {
+                tokens.next()
+            } else {
+                break
+            }
+            expr = parseExpr()
+        }
         return list
+    }
+
+    /** Parse a single SQL expression */
+    private fun parseExpr() : SqlExpr? {
+        var token = tokens.peek()
+        when (token) {
+            is KeywordToken -> return null
+            is IdentifierToken -> return Identifier(token.toString())
+            else -> TODO()
+        }
     }
 }

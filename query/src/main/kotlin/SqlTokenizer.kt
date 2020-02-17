@@ -3,7 +3,13 @@ package kquery
 import java.lang.IllegalStateException
 
 interface Token
-data class IdentifierToken(val s: String) : Token
+
+data class IdentifierToken(val s: String) : Token {
+    override fun toString(): String {
+        return s
+    }
+}
+
 data class LiteralStringToken(val s: String) : Token
 data class LiteralLongToken(val s: String) : Token
 data class KeywordToken(val s: String) : Token
