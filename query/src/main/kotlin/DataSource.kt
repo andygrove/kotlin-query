@@ -32,6 +32,9 @@ class CsvDataSource(filename: String, val batchSize: Int) : DataSource {
     override fun scan(columns: List<Int>): Iterable<RecordBatch> {
         return rows.drop(1).chunked(batchSize).map { rows ->
             val root = VectorSchemaRoot.create(schema, RootAllocator(Long.MAX_VALUE))
+            root.allocateNew()
+            root.rowCount = rows.size
+
             root.fieldVectors.withIndex().forEach { field ->
                 field.value.valueCount = rows.size
                 when (field.value) {

@@ -21,7 +21,7 @@ class Column(val i: Int): Expr {
     }
 
     override fun evaluate(input: RecordBatch): FieldVector {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return input.field(i)
     }
 }
 
