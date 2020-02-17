@@ -11,6 +11,9 @@ interface DataFrame {
     /** Execute the query and collect the results */
     fun collect(): Iterator<RecordBatch>
 
+    /** Get the logical plan */
+    fun logicalPlan() : LogicalPlan
+
 }
 
 class ExecutionContext {
@@ -34,5 +37,11 @@ class DataFrameImpl(val plan: LogicalPlan) : DataFrame {
     override fun collect(): Iterator<RecordBatch> {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
+    override fun logicalPlan(): LogicalPlan {
+        return plan
+    }
+
+
 }
 
