@@ -15,7 +15,7 @@ class DataFrameTest {
         val ctx = ExecutionContext()
 
         val df = ctx.csv(employeeCsv)
-            .filter(Eq(col("state"), LiteralString("CO")))
+            .filter(col("state") eq "CO")
             .select(listOf(col("id"), col("first_name"), col("last_name")))
 
         val expected =

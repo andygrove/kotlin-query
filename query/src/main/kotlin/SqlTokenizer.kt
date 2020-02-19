@@ -93,12 +93,13 @@ class Tokenizer(val sql: String) {
 
         } else if (sql[i] == '\'') {
             //TODO handle escaped quotes in string
-            val start = i
             i++
+            val start = i
             while (i < sql.length && sql[i] != '\'') {
                 i++
             }
-            return LiteralStringToken(sql.substring(start, i))
+            i++
+            return LiteralStringToken(sql.substring(start, i-1))
 
         } else if (sql[i].isDigit()) {
             //TODO support floating point numbers

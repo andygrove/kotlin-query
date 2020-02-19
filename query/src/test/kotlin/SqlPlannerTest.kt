@@ -17,23 +17,24 @@ class SqlPlannerTest {
         ctx.register("employee", ctx.csv(employeeCsv))
         val df = ctx.sql("SELECT id FROM employee")
 
-        val expected = "Projection: #0\n" +
-                "\tScan: src/test/data/employee.csv; projection=None\n"
+        val expected =
+            "Projection: #id\n" +
+            "\tScan: src/test/data/employee.csv; projection=None\n"
 
         assertEquals(expected, format(df.logicalPlan()))
     }
 
     @Test
-    @Ignore
     fun `plan SELECT with WHERE`() {
 
         val ctx = ExecutionContext()
         ctx.register("employee", ctx.csv(employeeCsv))
         val df = ctx.sql("SELECT id FROM employee WHERE state = 'CO'")
 
-        val expected = "Selection: #3 == 'CO'\n" +
-                "\tProjection: #0\n" +
-                "\t\tScan: src/test/data/employee.csv; projection=None\n"
+        val expected =
+            "Selection: #state = 'CO'\n" +
+            "\tProjection: #id\n" +
+            "\t\tScan: src/test/data/employee.csv; projection=None\n"
 
         assertEquals(expected, format(df.logicalPlan()))
     }

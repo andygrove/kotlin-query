@@ -1,22 +1,33 @@
 package io.andygrove.kquery
 
-import java.lang.IllegalStateException
+import java.sql.SQLException
 
 /** SQL Expression */
 interface SqlExpr
 
 /** Simple SQL identifier such as a table or column name */
 data class Identifier(val id: String) : SqlExpr {
-    override fun toString(): String {
-        return id
-    }
+    override fun toString() = id
+}
+
+/** Binary expression */
+data class BinaryExpr(val l: SqlExpr, val op: String, val r: SqlExpr) : SqlExpr {
+    override fun toString(): String = "$l $op $r"
+}
+
+/** SQL literal string */
+data class SqlString(val value: String) : SqlExpr {
+    override fun toString() = "'$value'"
+}
+
+/** SQL literal long */
+data class SqlLong(val value: Long) : SqlExpr {
+    override fun toString() = "$value"
 }
 
 //TODO: support other expression types
-//data class LiteralString() : SqlExpr
-//data class LiteralLong() : SqlExpr
+
 //data class Function() : SqlExpr
-//data class BinaryExpr() : SqlExpr
 //data class UnaryExpr() : SqlExpr
 //data class CastExpr() : SqlExpr
 //data class AliasExpr() : SqlExpr
@@ -37,9 +48,11 @@ interface PrattParser {
 
     fun parse(precedence: Int = 0): SqlExpr? {
         var left = parsePrefix()
+        println("parse() precedence=$precedence, left=$left")
         while (precedence < nextPrecedence()) {
             left = parseInfix(left!!, nextPrecedence())
         }
+        println("parse() returning $left")
         return left
     }
 }
@@ -50,14 +63,14 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         val token = tokens.peek()
         return when (token) {
             is KeywordToken -> {
-                when (token.toString()) {
+                when (token.s) {
                     "OR" -> 20
                     "AND" -> 30
                     else -> 0
                 }
             }
             is OperatorToken -> {
-                when (token.toString()) {
+                when (token.s) {
                     "<", "<=", "=", "!=", ">=", ">" -> 40
                     "+", "-" -> 50
                     "*", "/" -> 60
@@ -69,22 +82,32 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
     }
 
     override fun parsePrefix(): SqlExpr? {
-        val token = tokens.next()
-
-        if (token == null) {
-            return null
-        } else if (token == KeywordToken("SELECT")) {
-            return parseSelect()
-        } else {
-            throw IllegalStateException("Unexpected token $token")
+        println("parsePrefix() next token = ${tokens.peek()}")
+        val token = tokens.next() ?: return null
+        return when (token) {
+            is KeywordToken -> {
+              when (token.s) {
+                  "SELECT" -> parseSelect()
+                  else -> throw IllegalStateException("Unexpected keyword ${token.s}")
+              }
+            }
+            is IdentifierToken -> Identifier(token.s)
+            is LiteralStringToken -> SqlString(token.s)
+            is LiteralLongToken -> SqlLong(token.s.toLong())
+            else -> throw IllegalStateException("Unexpected token $token")
         }
     }
 
     override fun parseInfix(left: SqlExpr, precedence: Int): SqlExpr {
-
-        //TODO binary expressions
-
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        println("parseInfix() next token = ${tokens.peek()}")
+        val token = tokens.peek()
+        return when (token) {
+            is OperatorToken -> {
+                tokens.next()
+                BinaryExpr(left, token.s, parse(precedence) ?: throw SQLException("Error parsing infix"))
+            }
+            else -> throw IllegalStateException("Unexpected infix token $token")
+        }
     }
 
     private fun parseSelect() : SqlSelect {
@@ -105,8 +128,9 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         val list = mutableListOf<SqlExpr>()
         var expr = parseExpr()
         while (expr != null) {
+            //println("parseExprList parsed $expr")
             list.add(expr)
-            if (tokens.peek() == OperatorToken(",")) {
+            if (tokens.peek() == PunctuationToken(",")) {
                 tokens.next()
             } else {
                 break
@@ -116,8 +140,10 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         return list
     }
 
+    private fun parseExpr() = parse(0)
+
     /** Parse a single SQL expression */
-    private fun parseExpr() : SqlExpr? {
+    private fun parseExpr2() : SqlExpr? {
         var token = tokens.peek()
         when (token) {
             is KeywordToken -> return null

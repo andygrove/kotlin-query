@@ -25,7 +25,7 @@ val ctx = ExecutionContext()
 
 // Construct a query using the DataFrame API
 val df: DataFrame = ctx.csv("employee.csv")
-    .filter(Eq(col("state"), LiteralString("CO")))
+    .filter(col("state") eq "CO")
     .select(listOf(col("id"), col("first_name"), col("last_name")))
 
 // Execute the query
