@@ -44,7 +44,7 @@ val result = df.collect()
 
 This example results in the following logical query plan:
 
-```sql
+```
 Selection: #state = 'CO'
   Projection: #id, #first_name, #last_name
     Scan: src/test/data/employee.csv; projection=None
