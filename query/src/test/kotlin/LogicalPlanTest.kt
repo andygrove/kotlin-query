@@ -1,4 +1,4 @@
-package kquery;
+package io.andygrove.kquery
 
 import org.junit.Ignore
 import org.junit.Test

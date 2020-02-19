@@ -1,4 +1,4 @@
-package kquery;
+package io.andygrove.kquery
 
 interface DataFrame {
 

@@ -1,4 +1,4 @@
-package kquery
+package io.andygrove.kquery
 
 import com.github.doyaaaaaken.kotlincsv.client.CsvReader
 import org.apache.arrow.memory.RootAllocator

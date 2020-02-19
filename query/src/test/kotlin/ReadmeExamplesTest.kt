@@ -1,4 +1,4 @@
-package kquery;
+package io.andygrove.kquery
 
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance

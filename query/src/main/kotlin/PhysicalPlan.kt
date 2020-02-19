@@ -1,4 +1,4 @@
-package kquery
+package io.andygrove.kquery
 
 import org.apache.arrow.vector.BitVector
 import org.apache.arrow.vector.FieldVector
