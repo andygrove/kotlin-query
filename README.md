@@ -38,7 +38,7 @@ val csv: DataFrame = ctx.csv("src/test/data/employee.csv")
 ctx.register("employee", csv)
 
 // Execute a SQL query 
-val df: DataFrame = ctx.sql("SELECT id FROM employee")
+val df: DataFrame = ctx.sql("SELECT id, first_name, last_name FROM employee WHERE state = 'CO'")
 val result = df.collect()
 ```
 
