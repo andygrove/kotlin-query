@@ -1,29 +1,32 @@
 package kquery
 
-class SqlPlanner {
+import java.sql.SQLException
 
+class SqlPlanner {
 
     /**
      * Create logical plan from parsed SQL statement.
      */
-    fun createLogicalPlan(select: SqlSelect) : LogicalPlan {
+    fun createLogicalPlan(select: SqlSelect, tables: Map<String, DataFrame>) : LogicalPlan {
 
-        val ctx = ExecutionContext()
+        val df = tables[select.tableName]
+        if (df == null) {
+            throw SQLException("No table named '${select.tableName}'")
+        }
 
-        var df = ctx.csv(select.tableName + ".csv")
-
-        // TODO projection
         // TODO selection
         // TODO aggregate
 
-        return df.logicalPlan()
+        val input = df.logicalPlan()
+
+        return Projection(input, select.projection.map { createLogicalExpr(it, input) })
     }
 
-//    fun toLogicalExpr(expr: SqlExpr) : Expr {
-//        when (expr) {
-//            is Identifier
-//        }
-//
-//    }
+    private fun createLogicalExpr(expr: SqlExpr, input: LogicalPlan) : LogicalExpr {
+        return when (expr) {
+            is Identifier -> Column(input.schema().fields.indexOfFirst { it.name == expr.id })
+            else -> TODO()
+        }
+    }
 
 }

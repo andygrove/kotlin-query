@@ -1,15 +1,14 @@
 package kquery;
 
-import org.apache.arrow.vector.FieldVector
 import org.apache.arrow.vector.types.pojo.ArrowType
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.Schema
 
-interface Expr {
+interface LogicalExpr {
     fun toField(input: LogicalPlan): Field
 }
 
-class Column(val i: Int): Expr {
+class Column(val i: Int): LogicalExpr {
 
     override fun toField(input: LogicalPlan): Field {
         return input.schema().fields[i]
@@ -21,7 +20,7 @@ class Column(val i: Int): Expr {
 
 }
 
-class LiteralString(val str: String): Expr {
+class LiteralString(val str: String): LogicalExpr {
 
     override fun toField(input: LogicalPlan): Field {
         return Field.nullable(str, ArrowType.Utf8())
@@ -33,7 +32,7 @@ class LiteralString(val str: String): Expr {
 
 }
 
-class LiteralLong(val n: Long): Expr {
+class LiteralLong(val n: Long): LogicalExpr {
 
     override fun toField(input: LogicalPlan): Field {
         return Field.nullable(n.toString(), ArrowType.Int(32, false))
@@ -45,7 +44,7 @@ class LiteralLong(val n: Long): Expr {
 
 }
 
-class Eq(val l: Expr, val r: Expr): Expr {
+class Eq(val l: LogicalExpr, val r: LogicalExpr): LogicalExpr {
 
     override fun toField(input: LogicalPlan): Field {
         return Field.nullablePrimitive("eq", ArrowType.Bool())
@@ -61,7 +60,7 @@ interface AggregateExpr {
     fun toField(input: LogicalPlan): Field
 }
 
-class Sum(val e: Expr) : AggregateExpr {
+class Sum(val e: LogicalExpr) : AggregateExpr {
     override fun toField(input: LogicalPlan): Field {
         return Field.nullable("sum", e.toField(input).type)
     }
@@ -77,7 +76,7 @@ interface LogicalPlan {
 }
 
 /** Apply a projection (evaluate a list of expressions) to an input */
-class Projection(val input: LogicalPlan, val expr: List<Expr>): LogicalPlan {
+class Projection(val input: LogicalPlan, val expr: List<LogicalExpr>): LogicalPlan {
     override fun schema(): Schema {
         return Schema(expr.map { it.toField(input) })
     }
@@ -92,7 +91,7 @@ class Projection(val input: LogicalPlan, val expr: List<Expr>): LogicalPlan {
 }
 
 /** Apply a selection (a.k.a. filter) to an input */
-class Selection(val input: LogicalPlan, val expr: Expr): LogicalPlan {
+class Selection(val input: LogicalPlan, val expr: LogicalExpr): LogicalPlan {
     override fun schema(): Schema {
         return input.schema()
     }
@@ -106,7 +105,7 @@ class Selection(val input: LogicalPlan, val expr: Expr): LogicalPlan {
     }
 }
 
-class Aggregate(val input: LogicalPlan, val groupExpr: List<Expr>, val aggregateExpr: List<AggregateExpr>) : LogicalPlan {
+class Aggregate(val input: LogicalPlan, val groupExpr: List<LogicalExpr>, val aggregateExpr: List<AggregateExpr>) : LogicalPlan {
     override fun schema(): Schema {
         return input.schema()
     }
@@ -144,7 +143,7 @@ class Scan(val name: String, val dataSource: DataSource, val projection: List<In
 /** Format a logical plan in human-readable form */
 fun format(plan: LogicalPlan, indent: Int = 0): String {
     val b = StringBuilder()
-    0.rangeTo(indent).forEach { b.append("\t") }
+    0.until(indent).forEach { b.append("\t") }
     b.append(plan.toString()).append("\n")
     plan.children().forEach { b.append(format(it, indent+1)) }
     return b.toString()
