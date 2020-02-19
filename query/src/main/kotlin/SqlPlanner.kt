@@ -19,7 +19,13 @@ class SqlPlanner {
 
         val input = df.logicalPlan()
 
-        return Projection(input, select.projection.map { createLogicalExpr(it, input) })
+        val projection = Projection(input, select.projection.map { createLogicalExpr(it, input) })
+
+        if (select.selection != null) {
+            return Selection(projection, createLogicalExpr(select.selection, projection))
+        } else {
+            return projection
+        }
     }
 
     private fun createLogicalExpr(expr: SqlExpr, input: LogicalPlan) : LogicalExpr {

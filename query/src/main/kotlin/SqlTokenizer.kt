@@ -1,7 +1,5 @@
 package kquery
 
-import java.lang.IllegalStateException
-
 interface Token
 
 data class IdentifierToken(val s: String) : Token {
@@ -14,12 +12,13 @@ data class LiteralStringToken(val s: String) : Token
 data class LiteralLongToken(val s: String) : Token
 data class KeywordToken(val s: String) : Token
 data class OperatorToken(val s: String) : Token
+data class PunctuationToken(val s: String) : Token
 
 class TokenStream(val tokens: List<Token>) {
 
     var i = 0
 
-    fun peek() : Token? {
+    fun peek(): Token? {
         if (i < tokens.size) {
             return tokens[i]
         } else {
@@ -27,7 +26,7 @@ class TokenStream(val tokens: List<Token>) {
         }
     }
 
-    fun next() : Token? {
+    fun next(): Token? {
         if (i < tokens.size) {
             return tokens[i++]
         } else {
@@ -72,7 +71,11 @@ class Tokenizer(val sql: String) {
         }
 
         // look for start of token
-        if (isIdentifierStart(sql[i])) {
+        if (sql[i] == ',') {
+            i++
+            return PunctuationToken(",")
+
+        } else if (isIdentifierStart(sql[i])) {
             val start = i
             while (i < sql.length && isIdentifierPart(sql[i])) {
                 i++
@@ -84,17 +87,38 @@ class Tokenizer(val sql: String) {
                 return IdentifierToken(s)
             }
 
+        } else if (sql[i] == '=') {
+            i++
+            return OperatorToken("=")
+
+        } else if (sql[i] == '\'') {
+            //TODO handle escaped quotes in string
+            val start = i
+            i++
+            while (i < sql.length && sql[i] != '\'') {
+                i++
+            }
+            return LiteralStringToken(sql.substring(start, i))
+
+        } else if (sql[i].isDigit()) {
+            //TODO support floating point numbers
+            val start = i
+            while (i < sql.length && sql[i].isDigit()) {
+                i++
+            }
+            return LiteralLongToken(sql.substring(start, i))
+
         } else {
-            throw IllegalStateException()
+            throw IllegalStateException("Invalid character '${sql[i]}' at position $i in '$sql'")
         }
 
     }
 
-    private fun isIdentifierStart(ch: Char) : Boolean {
+    private fun isIdentifierStart(ch: Char): Boolean {
         return ch.isLetter()
     }
 
-    private fun isIdentifierPart(ch: Char) : Boolean {
+    private fun isIdentifierPart(ch: Char): Boolean {
         return ch.isLetter() || ch.isDigit() || ch == '_'
     }
 }

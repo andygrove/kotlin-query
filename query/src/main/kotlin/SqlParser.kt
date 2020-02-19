@@ -20,7 +20,8 @@ data class Identifier(val id: String) : SqlExpr {
 
 interface SqlRelation : SqlExpr
 
-data class SqlSelect(val projection: List<SqlExpr>, val tableName: String) : SqlRelation
+//TODO: GROUP BY, ORDER BY, LIMIT, OFFSET
+data class SqlSelect(val projection: List<SqlExpr>, val selection: SqlExpr?, val tableName: String) : SqlRelation
 
 /**
  * Pratt Top Down Operator Precedence Parser. See https://tdop.github.io/ for paper.
@@ -29,7 +30,7 @@ interface PrattParser {
 
     fun nextPrecedence(): Int
     fun parsePrefix(): SqlExpr?
-    fun parseInfix(left: SqlExpr, precendence: Int): SqlExpr
+    fun parseInfix(left: SqlExpr, precedence: Int): SqlExpr
 
     fun parse(precedence: Int = 0): SqlExpr? {
         var left = parsePrefix()
@@ -76,7 +77,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         }
     }
 
-    override fun parseInfix(left: SqlExpr, precendence: Int): SqlExpr {
+    override fun parseInfix(left: SqlExpr, precedence: Int): SqlExpr {
 
         //TODO binary expressions
 
@@ -87,7 +88,11 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         val projection = parseExprList()
         if (tokens.consumeKeyword("FROM")) {
             val table = parseExpr() as Identifier
-            return SqlSelect(projection, table.id)
+            if (tokens.consumeKeyword("WHERE")) {
+                return SqlSelect(projection, parseExpr(), table.id)
+            } else {
+                return SqlSelect(projection, null, table.id)
+            }
         } else {
             throw IllegalStateException("Expected FROM keyword")
         }
