@@ -2,16 +2,19 @@ package io.andygrove.kquery
 
 import java.lang.IllegalStateException
 
+/** SQL Expression */
 interface SqlExpr
 
-/** Simple identifier such as a table or column name */
+/** Simple SQL identifier such as a table or column name */
 data class Identifier(val id: String) : SqlExpr {
     override fun toString(): String {
         return id
     }
 }
 
-//data class Literal() : SqlExpr
+//TODO: support other expression types
+//data class LiteralString() : SqlExpr
+//data class LiteralLong() : SqlExpr
 //data class Function() : SqlExpr
 //data class BinaryExpr() : SqlExpr
 //data class UnaryExpr() : SqlExpr

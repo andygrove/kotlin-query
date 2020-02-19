@@ -1,5 +1,8 @@
 package io.andygrove.kquery
 
+/**
+ * The query planner creates a physical query plan from a logical query plan.
+ */
 class QueryPlanner {
 
     //TODO optimization rules

@@ -2,6 +2,9 @@ package io.andygrove.kquery
 
 import java.sql.SQLException
 
+/**
+ * SqlPlanner creates a logical plan from a parsed SQL statement.
+ */
 class SqlPlanner {
 
     /**

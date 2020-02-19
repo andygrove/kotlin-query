@@ -4,10 +4,22 @@ import org.apache.arrow.vector.types.pojo.ArrowType
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.Schema
 
+/**
+ * Logical Expression for use in logical query plans. The logical expression provides information needed
+ * during the planning phase such as the name and data type of the expression.
+ */
 interface LogicalExpr {
+
+    /**
+     * Return meta-data about the value that will be produced by this expression when evaluated against
+     * a particular input.
+     */
     fun toField(input: LogicalPlan): Field
 }
 
+/**
+ * Logical expression representing a reference to a column.
+ */
 class Column(val i: Int): LogicalExpr {
 
     override fun toField(input: LogicalPlan): Field {
@@ -20,6 +32,9 @@ class Column(val i: Int): LogicalExpr {
 
 }
 
+/**
+ * Logical expression representing a literal string value.
+ */
 class LiteralString(val str: String): LogicalExpr {
 
     override fun toField(input: LogicalPlan): Field {
@@ -32,6 +47,9 @@ class LiteralString(val str: String): LogicalExpr {
 
 }
 
+/**
+ * Logical expression representing a literal long value.
+ */
 class LiteralLong(val n: Long): LogicalExpr {
 
     override fun toField(input: LogicalPlan): Field {
@@ -44,6 +62,9 @@ class LiteralLong(val n: Long): LogicalExpr {
 
 }
 
+/**
+ * Logical expression representing an equality comparison.
+ */
 class Eq(val l: LogicalExpr, val r: LogicalExpr): LogicalExpr {
 
     override fun toField(input: LogicalPlan): Field {
@@ -56,10 +77,21 @@ class Eq(val l: LogicalExpr, val r: LogicalExpr): LogicalExpr {
 
 }
 
+/**
+ * Base interface for all aggregate expressions.
+ */
 interface AggregateExpr {
+
+    /**
+     * Return meta-data about the value that will be produced by this expression when evaluated against
+     * a particular input.
+     */
     fun toField(input: LogicalPlan): Field
 }
 
+/**
+ * Logical expression representing the SUM aggregate expression.
+ */
 class Sum(val e: LogicalExpr) : AggregateExpr {
     override fun toField(input: LogicalPlan): Field {
         return Field.nullable("sum", e.toField(input).type)
@@ -70,12 +102,26 @@ class Sum(val e: LogicalExpr) : AggregateExpr {
     }
 }
 
+/**
+ * A logical plan represents a data transformation or action that returns a relation (a set of tuples).
+ */
 interface LogicalPlan {
+
+    /**
+     * Returns the schema of the data that will be produced by this logical plan.
+     */
     fun schema(): Schema
+
+    /**
+     * Returns the children (inputs) of this logical plan. This method is used to enable use of the
+     * visitor pattern to walk a query tree.
+     */
     fun children(): List<LogicalPlan>
 }
 
-/** Apply a projection (evaluate a list of expressions) to an input */
+/**
+ * Logical plan representing a projection (evaluating a list of expressions) against an input
+ */
 class Projection(val input: LogicalPlan, val expr: List<LogicalExpr>): LogicalPlan {
     override fun schema(): Schema {
         return Schema(expr.map { it.toField(input) })
@@ -90,7 +136,9 @@ class Projection(val input: LogicalPlan, val expr: List<LogicalExpr>): LogicalPl
     }
 }
 
-/** Apply a selection (a.k.a. filter) to an input */
+/**
+ * Logical plan representing a selection (a.k.a. filter) against an input
+ */
 class Selection(val input: LogicalPlan, val expr: LogicalExpr): LogicalPlan {
     override fun schema(): Schema {
         return input.schema()
@@ -105,6 +153,9 @@ class Selection(val input: LogicalPlan, val expr: LogicalExpr): LogicalPlan {
     }
 }
 
+/**
+ * Logical plan representing an aggregate query against an input.
+ */
 class Aggregate(val input: LogicalPlan, val groupExpr: List<LogicalExpr>, val aggregateExpr: List<AggregateExpr>) : LogicalPlan {
     override fun schema(): Schema {
         return input.schema()

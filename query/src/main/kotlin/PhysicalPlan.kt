@@ -6,7 +6,14 @@ import org.apache.arrow.vector.VectorSchemaRoot
 import org.apache.arrow.vector.types.pojo.Schema
 import java.lang.IllegalStateException
 
+/**
+ * Physical representation of an expression.
+ */
 interface PhysicalExpr {
+
+    /**
+     * Evaluate the expression against an input record batch and produce a column of data as output
+     */
     fun evaluate(input: RecordBatch): FieldVector
 }
 
@@ -16,8 +23,14 @@ class ColumnExpr(val column: Column) : PhysicalExpr {
     }
 }
 
-
+/**
+ * A physical plan represents an executable piece of code that will produce data.
+ */
 interface PhysicalPlan {
+
+    /**
+     * Execute a physical plan and produce a series of record batches.
+     */
     fun execute(): Iterable<RecordBatch>
 }
 
@@ -30,6 +43,9 @@ class ScanExec(val ds: DataSource, val projection: List<Int>) : PhysicalPlan {
     }
 }
 
+/**
+ * Execute a projection.
+ */
 class ProjectionExec(val input: PhysicalPlan, val schema: Schema, val expr: List<PhysicalExpr>) : PhysicalPlan {
 
     override fun execute(): Iterable<RecordBatch> {
@@ -40,6 +56,9 @@ class ProjectionExec(val input: PhysicalPlan, val schema: Schema, val expr: List
     }
 }
 
+/**
+ * Execute a selection.
+ */
 class SelectionExec(val input: PhysicalPlan, val expr: PhysicalExpr) : PhysicalPlan {
     override fun execute(): Iterable<RecordBatch> {
         return input.execute().map { batch ->

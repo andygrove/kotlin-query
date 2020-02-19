@@ -12,7 +12,11 @@ import java.io.File
 import java.lang.UnsupportedOperationException
 
 interface DataSource {
+
+    /** Return the schema for the underlying data source */
     fun schema(): Schema
+
+    /** Scan the data source, selecting the specified columns */
     fun scan(columns: List<Int>): Iterable<RecordBatch>
 }
 
