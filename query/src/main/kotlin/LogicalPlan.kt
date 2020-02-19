@@ -19,6 +19,18 @@ interface LogicalExpr {
     fun toField(input: LogicalPlan): Field
 }
 
+infix fun LogicalExpr.eq(value: String): Eq {
+    return Eq(this, LiteralString(value))
+}
+
+infix fun LogicalExpr.eq(value: Long): Eq {
+    return Eq(this, LiteralLong(value))
+}
+
+infix fun LogicalExpr.eq(expr: LogicalExpr): Eq {
+    return Eq(this, expr)
+}
+
 /**
  * Logical expression representing a reference to a column by name.
  */

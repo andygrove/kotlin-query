@@ -2,6 +2,7 @@ package io.andygrove.kquery
 
 //import kotlinx.coroutines.*
 
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 
@@ -9,7 +10,8 @@ import org.junit.jupiter.api.TestInstance
 class ParallelQueryTest {
 
     @Test
-    fun parallelQuery() {
+    @Ignore
+    fun `parallel query example`() {
 
         val list = mutableListOf<List<RecordBatch>>()
 

@@ -10,7 +10,7 @@ class LogicalPlanTest {
     val employeeCsv = "src/test/data/employee.csv"
 
     @Test
-    fun buildPlanMultiStep() {
+    fun `build logicalPlan manually`() {
         // create a plan to represent the data source
         val csv = CsvDataSource(employeeCsv, 10)
         // create a plan to represent the scan of the data source (FROM)
@@ -26,7 +26,7 @@ class LogicalPlanTest {
     }
 
     @Test
-    fun buildPlanSingleStep() {
+    fun `build logicalPlan nested`() {
         val plan = Projection(
                 Selection(
                         Scan("employee", CsvDataSource(employeeCsv, 10), listOf()),

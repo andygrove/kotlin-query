@@ -2,6 +2,7 @@ package io.andygrove.kquery
 
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
+import kotlin.test.assertEquals
 
 /**
  * Example source code for README in this repo.
@@ -12,7 +13,7 @@ class ReadmeExamplesTest {
     val employeeCsv = "src/test/data/employee.csv"
 
     @Test
-    fun sqlExample() {
+    fun `SQL example`() {
 
         // Create a context
         val ctx = ExecutionContext()
@@ -22,28 +23,33 @@ class ReadmeExamplesTest {
         ctx.register("employee", csv)
 
         // Execute a SQL query
-        val df = ctx.sql("SELECT id FROM employee")
-        val result = df.collect()
+        val df = ctx.sql("SELECT id, first_name, last_name FROM employee WHERE state = 'CO'")
 
-        result.forEach {
-            println("got batch with schema: ${it.schema}")
-            val id = it.field(0)
-        }
+        val expected =
+            "Selection: #state = 'CO'\n" +
+            "\tProjection: #id, #first_name, #last_name\n" +
+            "\t\tScan: src/test/data/employee.csv; projection=None\n"
+
+        assertEquals(expected, format(df.logicalPlan()))
     }
 
     @Test
-    fun dfExample() {
+    fun `DataFrame example`() {
 
         // Create a context
         val ctx = ExecutionContext()
 
         // Construct a query using the DataFrame API
         val df: DataFrame = ctx.csv(employeeCsv)
-                .filter(Eq(col("state"), LiteralString("CO")))
+                .filter(col("state") eq "CO")
                 .select(listOf(col("id"), col("first_name"), col("last_name")))
 
-        // Execute the query
-        //TODO: val result = df.collect()
+        val expected =
+                "Projection: #id, #first_name, #last_name\n" +
+                "\tSelection: #state = 'CO'\n" +
+                "\t\tScan: src/test/data/employee.csv; projection=None\n"
+
+        assertEquals(expected, format(df.logicalPlan()))
     }
 
 }
