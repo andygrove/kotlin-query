@@ -2,21 +2,35 @@
 
 `kotlin-query` is an in-memory SQL query engine based on Apache Arrow. It supports both a DataFrame API and SQL.
 
+SQL Example:
+
 ```kotlin
-// create an execution context
+// Create a context
 val ctx = ExecutionContext()
 
-// register a CSV data source with the context 
+// Register a CSV data source with the context 
 val csv: DataFrame = ctx.csv(employeeCsv)
 ctx.register("employee", csv)
 
-// execute a SQL query 
+// Execute a SQL query 
 val df: DataFrame = ctx.sql("SELECT id FROM employee")
-val batches = df.collect()
+val result = df.collect()
+```
 
-batches.forEach {
-    println("got batch with schema: ${it.schema}")
-}
+DataFrame Example:
+
+```kotlin
+// Create a context
+val ctx = ExecutionContext()
+
+// Construct a query using the DataFrame API
+val df: DataFrame = ctx.csv("employee.csv")
+        .filter(Eq(Column(3), LiteralString("CO")))
+        .select(listOf(Column(0), Column(1), Column(2)))
+
+// Execute the query
+val result = df.collect()
+
 ```
 
 # Documentation
