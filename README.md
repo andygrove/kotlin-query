@@ -2,14 +2,39 @@
 
 `kotlin-query` is an in-memory SQL query engine based on Apache Arrow. It supports both a DataFrame API and SQL.
 
-SQL Example:
+## DataFrame Example
+
+```kotlin
+// Create a context
+val ctx = ExecutionContext()
+
+// Construct a query using the DataFrame API
+val df: DataFrame = ctx.csv("src/test/data/employee.csv")
+    .filter(col("state") eq "CO")
+    .select(listOf(col("id"), col("first_name"), col("last_name")))
+
+// Execute the query
+val result = df.collect()
+```
+
+This example results in the following logical query plan:
+
+```
+Projection: #id, #first_name, #last_name
+  Selection: #state = 'CO'
+    Scan: src/test/data/employee.csv; projection=None
+```
+
+## SQL Example
+
+SQL queries can be executed against any DataFrame that is registered as a table against the context.
 
 ```kotlin
 // Create a context
 val ctx = ExecutionContext()
 
 // Register a CSV data source with the context 
-val csv: DataFrame = ctx.csv(employeeCsv)
+val csv: DataFrame = ctx.csv("src/test/data/employee.csv")
 ctx.register("employee", csv)
 
 // Execute a SQL query 
@@ -17,25 +42,17 @@ val df: DataFrame = ctx.sql("SELECT id FROM employee")
 val result = df.collect()
 ```
 
-DataFrame Example:
+This example results in the following logical query plan:
 
-```kotlin
-// Create a context
-val ctx = ExecutionContext()
-
-// Construct a query using the DataFrame API
-val df: DataFrame = ctx.csv("employee.csv")
-    .filter(col("state") eq "CO")
-    .select(listOf(col("id"), col("first_name"), col("last_name")))
-
-// Execute the query
-val result = df.collect()
-
+```sql
+Selection: #state = 'CO'
+  Projection: #id, #first_name, #last_name
+    Scan: src/test/data/employee.csv; projection=None
 ```
 
 # Documentation
 
-See the companion book [How Query Engines Work](https://leanpub.com/how-query-engines-work/) for design documentation.
+See the companion book [How Query Engines Work](https://leanpub.com/how-query-engines-work/) for design documentation. `kotlin-query` is the reference implementation of the design discussed in this book.
 
 # Status
 

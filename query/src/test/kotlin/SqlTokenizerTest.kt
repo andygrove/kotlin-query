@@ -37,15 +37,6 @@ class SqlTokenizerTest {
         )
         val actual = tokenize("SELECT a, b FROM employee WHERE state = 'CO'")
         assertEquals(expected, actual)
-
-        /*
-        expected: <[KeywordToken(s=SELECT), a, PunctuationToken(s=,), b, KeywordToken(s=FROM), employee, KeywordToken(s=WHERE), state, OperatorToken(s==), LiteralStringToken(s=CO)]>
-        but was:  <[KeywordToken(s=SELECT), a, PunctuationToken(s=,), b, KeywordToken(s=FROM), employee, KeywordToken(s=WHERE), state, OperatorToken(s==), LiteralStringToken(s=CO), LiteralStringToken(s=)]>
-	at org.junit.jupiter.api.AssertionUtils.fail(AssertionUtils.java:55)
-	at org.junit.jupiter.api.AssertionUtils.failNotEqual(AssertionUtils.java:62)
-	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:182)
-	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:1135)
-         */
     }
 
     private fun tokenize(sql: String) : List<Token> {
