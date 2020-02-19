@@ -12,7 +12,7 @@ class PhysicalPlanTest {
 
     @Test
     @Ignore
-    fun executeProjection() {
+    fun `query with projection and selection`() {
         // create a plan to represent the data source
         val csv = CsvDataSource(employeeCsv, 10)
         // create a plan to represent the scan of the data source (FROM)

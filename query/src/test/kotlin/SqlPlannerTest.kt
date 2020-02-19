@@ -11,7 +11,7 @@ class SqlPlannerTest {
     val employeeCsv = "src/test/data/employee.csv"
 
     @Test
-    fun planSimpleSelect() {
+    fun `plan simple SELECT`() {
 
         val ctx = ExecutionContext()
         ctx.register("employee", ctx.csv(employeeCsv))
@@ -25,7 +25,7 @@ class SqlPlannerTest {
 
     @Test
     @Ignore
-    fun planSelectWhere() {
+    fun `plan SELECT with WHERE`() {
 
         val ctx = ExecutionContext()
         ctx.register("employee", ctx.csv(employeeCsv))

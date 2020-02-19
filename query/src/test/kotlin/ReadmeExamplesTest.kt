@@ -12,7 +12,7 @@ class ReadmeExamplesTest {
     val employeeCsv = "src/test/data/employee.csv"
 
     @Test
-    fun sqlExample() {
+    fun `SQL example`() {
 
         // Create a context
         val ctx = ExecutionContext()
@@ -32,7 +32,7 @@ class ReadmeExamplesTest {
     }
 
     @Test
-    fun dfExample() {
+    fun `DataFrame example`() {
 
         // Create a context
         val ctx = ExecutionContext()

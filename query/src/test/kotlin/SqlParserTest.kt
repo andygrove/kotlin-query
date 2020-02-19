@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 class SqlParserTest {
 
     @Test
-    fun parseSimpleSelect() {
+    fun `parse simple SELECT`() {
         val tokens = tokenize("SELECT a FROM b")
         val ast = SqlParser(tokens).parse()
         println(ast)

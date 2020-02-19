@@ -12,10 +12,7 @@ class SqlPlanner {
      */
     fun createLogicalPlan(select: SqlSelect, tables: Map<String, DataFrame>) : LogicalPlan {
 
-        val df = tables[select.tableName]
-        if (df == null) {
-            throw SQLException("No table named '${select.tableName}'")
-        }
+        val df = tables[select.tableName] ?: throw SQLException("No table named '${select.tableName}'")
 
         // TODO selection
         // TODO aggregate

@@ -8,7 +8,7 @@ import kotlin.test.assertEquals
 class SqlTokenizerTest {
 
     @Test
-    fun tokenizeSimpleSelect() {
+    fun `tokenize simple SELECT`() {
         val expected = listOf(
                 KeywordToken("SELECT"),
                 IdentifierToken("a"),
@@ -22,7 +22,7 @@ class SqlTokenizerTest {
     }
 
     @Test
-    fun tokenizeSelectWithWhere() {
+    fun `tokenize SELECT with WHERE`() {
         val expected = listOf(
                 KeywordToken("SELECT"),
                 IdentifierToken("a"),
