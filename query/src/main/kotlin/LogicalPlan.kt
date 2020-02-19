@@ -3,6 +3,8 @@ package io.andygrove.kquery
 import org.apache.arrow.vector.types.pojo.ArrowType
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.Schema
+import java.lang.IllegalStateException
+import java.sql.SQLException
 
 /**
  * Logical Expression for use in logical query plans. The logical expression provides information needed
@@ -18,9 +20,27 @@ interface LogicalExpr {
 }
 
 /**
- * Logical expression representing a reference to a column.
+ * Logical expression representing a reference to a column by name.
  */
-class Column(val i: Int): LogicalExpr {
+class Column(val name: String): LogicalExpr {
+
+    override fun toField(input: LogicalPlan): Field {
+        return input.schema().fields.find { it.name == name } ?: throw SQLException("No column named '$name'")
+    }
+
+    override fun toString(): String {
+        return "#$name"
+    }
+
+}
+
+/** Convenience method to create a Column reference */
+fun col(name: String) = Column(name)
+
+/**
+ * Logical expression representing a reference to a column by index.
+ */
+class ColumnIndex(val i: Int): LogicalExpr {
 
     override fun toField(input: LogicalPlan): Field {
         return input.schema().fields[i]
@@ -42,7 +62,7 @@ class LiteralString(val str: String): LogicalExpr {
     }
 
     override fun toString(): String {
-        return str
+        return "'$str'"
     }
 
 }

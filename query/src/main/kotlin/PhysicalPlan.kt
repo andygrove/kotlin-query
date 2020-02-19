@@ -17,9 +17,18 @@ interface PhysicalExpr {
     fun evaluate(input: RecordBatch): FieldVector
 }
 
-class ColumnExpr(val column: Column) : PhysicalExpr {
+class ColumnExpr(val i: Int) : PhysicalExpr {
     override fun evaluate(input: RecordBatch): FieldVector {
-        return input.field(column.i)
+        return input.field(i)
+    }
+}
+
+class EqExpr(val l: PhysicalExpr, val r: PhysicalExpr): PhysicalExpr {
+    override fun evaluate(input: RecordBatch): FieldVector {
+        val ll = l.evaluate(input)
+        val rr = r.evaluate(input)
+
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
 

@@ -1,5 +1,6 @@
 package io.andygrove.kquery
 
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
@@ -23,6 +24,7 @@ class SqlPlannerTest {
     }
 
     @Test
+    @Ignore
     fun planSelectWhere() {
 
         val ctx = ExecutionContext()

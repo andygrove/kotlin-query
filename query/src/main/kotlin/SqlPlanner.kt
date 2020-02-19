@@ -33,7 +33,7 @@ class SqlPlanner {
 
     private fun createLogicalExpr(expr: SqlExpr, input: LogicalPlan) : LogicalExpr {
         return when (expr) {
-            is Identifier -> Column(input.schema().fields.indexOfFirst { it.name == expr.id })
+            is Identifier -> ColumnIndex(input.schema().fields.indexOfFirst { it.name == expr.id })
             else -> TODO()
         }
     }

@@ -1,22 +1,28 @@
 package io.andygrove.kquery
 
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
+import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DataFrameTest {
 
+    val employeeCsv = "src/test/data/employee.csv"
+
     @Test
-    @Ignore
-    fun test() {
+    fun `build DataFrame`() {
 
         val ctx = ExecutionContext()
 
-        val df = ctx.csv("employee.csv")
-            .filter(Eq(Column(3), LiteralString("CO")))
-            .select(listOf(Column(0), Column(1), Column(2), Column(3), Column(4), Column(5)))
+        val df = ctx.csv(employeeCsv)
+            .filter(Eq(col("state"), LiteralString("CO")))
+            .select(listOf(col("id"), col("first_name"), col("last_name")))
 
-        val results = df.collect()
+        val expected =
+                "Projection: #id, #first_name, #last_name\n" +
+                "\tSelection: #state = 'CO'\n" +
+                "\t\tScan: src/test/data/employee.csv; projection=None\n"
+
+        assertEquals(expected, format(df.logicalPlan()))
     }
 }

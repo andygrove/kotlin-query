@@ -4,7 +4,7 @@ import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 
 /**
- * Example source code for book.
+ * Example source code for README in this repo.
  */
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ReadmeExamplesTest {
@@ -39,11 +39,11 @@ class ReadmeExamplesTest {
 
         // Construct a query using the DataFrame API
         val df: DataFrame = ctx.csv(employeeCsv)
-                .filter(Eq(Column(3), LiteralString("CO")))
-                .select(listOf(Column(0), Column(1), Column(2)))
+                .filter(Eq(col("state"), LiteralString("CO")))
+                .select(listOf(col("id"), col("first_name"), col("last_name")))
 
         // Execute the query
-        val result = df.collect()
+        //TODO: val result = df.collect()
     }
 
 }
