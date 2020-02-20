@@ -14,7 +14,7 @@ class SqlParserTest {
         println(ast)
 
         val select = ast as SqlSelect
-        assertEquals(listOf(Identifier("id"), Identifier("first_name"), Identifier("last_name")), select.projection)
+        assertEquals(listOf(SqlIdentifier("id"), SqlIdentifier("first_name"), SqlIdentifier("last_name")), select.projection)
         assertEquals("employee", select.tableName)
     }
 
@@ -25,8 +25,8 @@ class SqlParserTest {
         println(ast)
 
         val select = ast as SqlSelect
-        assertEquals(listOf(Identifier("id"), Identifier("first_name"), Identifier("last_name")), select.projection)
-        assertEquals(BinaryExpr(Identifier("state"), "=", SqlString("CO")), select.selection)
+        assertEquals(listOf(SqlIdentifier("id"), SqlIdentifier("first_name"), SqlIdentifier("last_name")), select.projection)
+        assertEquals(SqlBinaryExpr(SqlIdentifier("state"), "=", SqlString("CO")), select.selection)
         assertEquals("employee", select.tableName)
     }
 

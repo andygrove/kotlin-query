@@ -6,12 +6,12 @@ import java.sql.SQLException
 interface SqlExpr
 
 /** Simple SQL identifier such as a table or column name */
-data class Identifier(val id: String) : SqlExpr {
+data class SqlIdentifier(val id: String) : SqlExpr {
     override fun toString() = id
 }
 
 /** Binary expression */
-data class BinaryExpr(val l: SqlExpr, val op: String, val r: SqlExpr) : SqlExpr {
+data class SqlBinaryExpr(val l: SqlExpr, val op: String, val r: SqlExpr) : SqlExpr {
     override fun toString(): String = "$l $op $r"
 }
 
@@ -91,7 +91,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
                   else -> throw IllegalStateException("Unexpected keyword ${token.s}")
               }
             }
-            is IdentifierToken -> Identifier(token.s)
+            is IdentifierToken -> SqlIdentifier(token.s)
             is LiteralStringToken -> SqlString(token.s)
             is LiteralLongToken -> SqlLong(token.s.toLong())
             else -> throw IllegalStateException("Unexpected token $token")
@@ -104,7 +104,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         return when (token) {
             is OperatorToken -> {
                 tokens.next()
-                BinaryExpr(left, token.s, parse(precedence) ?: throw SQLException("Error parsing infix"))
+                SqlBinaryExpr(left, token.s, parse(precedence) ?: throw SQLException("Error parsing infix"))
             }
             else -> throw IllegalStateException("Unexpected infix token $token")
         }
@@ -113,7 +113,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
     private fun parseSelect() : SqlSelect {
         val projection = parseExprList()
         if (tokens.consumeKeyword("FROM")) {
-            val table = parseExpr() as Identifier
+            val table = parseExpr() as SqlIdentifier
             if (tokens.consumeKeyword("WHERE")) {
                 return SqlSelect(projection, parseExpr(), table.id)
             } else {
@@ -149,7 +149,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
             is KeywordToken -> return null
             is IdentifierToken -> {
                 tokens.next()
-                return Identifier(token.toString())
+                return SqlIdentifier(token.toString())
             }
             else -> TODO()
         }

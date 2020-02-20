@@ -30,10 +30,10 @@ class SqlPlanner {
 
     private fun createLogicalExpr(expr: SqlExpr, input: LogicalPlan) : LogicalExpr {
         return when (expr) {
-            is Identifier -> Column(expr.id)
+            is SqlIdentifier -> Column(expr.id)
             is SqlString -> LiteralString(expr.value)
             is SqlLong -> LiteralLong(expr.value)
-            is BinaryExpr -> when(expr.op) {
+            is SqlBinaryExpr -> when(expr.op) {
                 "=" -> Eq(createLogicalExpr(expr.l, input), createLogicalExpr(expr.r, input))
                 else -> TODO(expr.javaClass.toString())
             }
