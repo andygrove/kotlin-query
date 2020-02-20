@@ -32,5 +32,12 @@ class DataSourceTest {
                 "timestamp_col: Binary>", parquet.schema().toString())
     }
 
+    @Test
+    fun `read parquet file`() {
+        val parquet = ParquetDataSource(File(dir, "alltypes_plain.parquet").absolutePath)
+        parquet.scan(listOf(0)).iterator().forEach {
+            println(it)
+        }
+    }
 }
 

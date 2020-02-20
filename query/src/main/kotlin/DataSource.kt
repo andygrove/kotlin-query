@@ -14,16 +14,19 @@ import org.apache.hadoop.fs.Path;
 import org.apache.parquet.arrow.schema.SchemaConverter
 
 import org.apache.parquet.column.page.PageReadStore
+import org.apache.parquet.example.data.Group
 import org.apache.parquet.example.data.simple.SimpleGroup
 import org.apache.parquet.example.data.simple.convert.GroupRecordConverter
 import org.apache.parquet.hadoop.ParquetFileReader
 import org.apache.parquet.hadoop.util.HadoopInputFile
 import org.apache.parquet.io.ColumnIOFactory
 import org.apache.parquet.io.RecordReader
+import org.apache.parquet.schema.PrimitiveType
 import org.apache.parquet.schema.Type
 
 import java.io.File
 import java.io.IOException
+import java.lang.IllegalStateException
 import java.util.*
 
 
@@ -76,13 +79,13 @@ class CsvDataSource(filename: String, private val batchSize: Int) : DataSource {
 class ParquetDataSource(private val filename: String) : DataSource {
 
     override fun schema(): Schema {
-        return ParquetScan(filename).use {
+        return ParquetScan(filename, listOf()).use {
             SchemaConverter().fromParquet(it.schema).arrowSchema
         }
     }
 
     override fun scan(columns: List<Int>): Iterable<RecordBatch> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return ParquetScan(filename, columns)
     }
 
 }
@@ -90,7 +93,7 @@ class ParquetDataSource(private val filename: String) : DataSource {
 /**
  * Based on blog post at https://www.arm64.ca/post/reading-parquet-files-java/
  */
-class ParquetScan(filename: String) : AutoCloseable, Iterable<RecordBatch> {
+class ParquetScan(filename: String, private val columns: List<Int>) : AutoCloseable, Iterable<RecordBatch> {
 
     val reader = ParquetFileReader.open(HadoopInputFile.fromPath(Path(filename), Configuration()))
     val schema = reader.footer.fileMetaData.schema
@@ -107,59 +110,59 @@ class ParquetScan(filename: String) : AutoCloseable, Iterable<RecordBatch> {
 class ParquetIterator(private val reader: ParquetFileReader) : Iterator<RecordBatch> {
 
     val schema = reader.footer.fileMetaData.schema
-    val fields = schema.fields
-    var pages: PageReadStore? = null
+
+    val arrowSchema = SchemaConverter().fromParquet(schema).arrowSchema
+
+    var batch: RecordBatch? = null
 
     override fun hasNext(): Boolean {
-        if (pages == null) {
-            pages = nextBatch()
-            if (pages == null) {
-                return false
-            }
-        }
-
-
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        batch = nextBatch()
+        return batch != null
     }
 
     override fun next(): RecordBatch {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        val next = batch
+        batch = null
+        return next!!
     }
 
-    private fun nextBatch() : PageReadStore? {
-//        val pages = reader.readNextRowGroup()
-//        if (pages == null) {
-//            return null
-//        }
-//
-//        val rows = pages.rowCount
-//        val columnIO = ColumnIOFactory().getColumnIO(schema)
-//
-//        //TODO we really want a column reader not a record reader
-//        val recordReader: RecordReader<*> = columnIO.getRecordReader(pages, GroupRecordConverter(schema))
-//        for (i in 0 until rows) {
-//            val simpleGroup = recordReader.read() as SimpleGroup
-//            simpleGroup.get
-//        }
-        TODO()
+    private fun nextBatch() : RecordBatch? {
+        val pages = reader.readNextRowGroup()
+        if (pages == null) {
+            return null
+        }
+
+        if (pages.rowCount > Integer.MAX_VALUE) {
+            throw IllegalStateException()
+        }
+
+        val rows = pages.rowCount.toInt()
+        println("Reading $rows rows")
+
+        val root = VectorSchemaRoot.create(arrowSchema, RootAllocator(Long.MAX_VALUE))
+        root.allocateNew()
+        root.rowCount = rows
+
+        batch = RecordBatch(arrowSchema, root)
+
+        //TODO we really want to read directly as columns not rows
+        val columnIO = ColumnIOFactory().getColumnIO(schema)
+        val recordReader: RecordReader<Group> = columnIO.getRecordReader(pages, GroupRecordConverter(schema))
+        for (i in 0 until rows) {
+            val group: Group = recordReader.read()
+            for (j in 0 until arrowSchema.fields.size) {
+                val primitiveTypeName = schema.columns[j].primitiveType.primitiveTypeName
+                when (primitiveTypeName) {
+                    PrimitiveType.PrimitiveTypeName.INT32 -> {
+                        group.getInteger(i,j)
+                    }
+                    else -> println("unsupported type $primitiveTypeName")
+                }
+            }
+        }
+
+        return batch
     }
 
 
 }
-
-//class Parquet(data: List<SimpleGroup>, schema: List<Type>) {
-//    private val data: List<SimpleGroup>
-//    private val schema: List<Type>
-//    fun getData(): List<SimpleGroup> {
-//        return data
-//    }
-//
-//    fun getSchema(): List<Type> {
-//        return schema
-//    }
-//
-//    init {
-//        this.data = data
-//        this.schema = schema
-//    }
-//}
