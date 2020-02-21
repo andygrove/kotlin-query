@@ -8,6 +8,29 @@ import kotlin.test.assertEquals
 class SqlParserTest {
 
     @Test
+    fun `parse math expr 1`() {
+        val tokens = tokenize("1 + 2 * 3")
+        val ast = SqlParser(tokens).parse()
+        val expected = SqlBinaryExpr(SqlLong(1),
+                "+",
+                SqlBinaryExpr(SqlLong(2), "*", SqlLong(3))
+        )
+        assertEquals(expected, ast)
+    }
+
+    @Test
+    fun `parse math expr 2`() {
+        val tokens = tokenize("1 * 2 + 3")
+        val ast = SqlParser(tokens).parse()
+        val expected = SqlBinaryExpr(
+                SqlBinaryExpr(SqlLong(1), "*", SqlLong(2)),
+                "+",
+                SqlLong(3)
+        )
+        assertEquals(expected, ast)
+    }
+
+    @Test
     fun `parse simple SELECT`() {
         val tokens = tokenize("SELECT id, first_name, last_name FROM employee")
         val ast = SqlParser(tokens).parse()

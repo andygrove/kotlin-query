@@ -65,8 +65,8 @@ interface PrattParser {
 class SqlParser(val tokens: TokenStream) : PrattParser {
 
     override fun nextPrecedence(): Int {
-        val token = tokens.peek()
-        return when (token) {
+        val token = tokens.peek() ?: return 0
+        val precedence = when (token) {
             is KeywordToken -> {
                 when (token.s) {
                     "OR" -> 20
@@ -84,6 +84,8 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
             }
             else -> 0
         }
+        println("nextPrecedence($token) returning $precedence")
+        return precedence
     }
 
     override fun parsePrefix(): SqlExpr? {
@@ -147,16 +149,5 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
 
     private fun parseExpr() = parse(0)
 
-    /** Parse a single SQL expression */
-    private fun parseExpr2() : SqlExpr? {
-        var token = tokens.peek()
-        when (token) {
-            is KeywordToken -> return null
-            is IdentifierToken -> {
-                tokens.next()
-                return SqlIdentifier(token.toString())
-            }
-            else -> TODO()
-        }
-    }
+
 }

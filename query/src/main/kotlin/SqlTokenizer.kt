@@ -87,9 +87,9 @@ class Tokenizer(val sql: String) {
                 return IdentifierToken(s)
             }
 
-        } else if (sql[i] == '=') {
+        } else if (listOf('=', '*', '/', '%', '-', '+').contains(sql[i])) {
             i++
-            return OperatorToken("=")
+            return OperatorToken(sql[i-1].toString())
 
         } else if (sql[i] == '\'') {
             //TODO handle escaped quotes in string
