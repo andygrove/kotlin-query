@@ -42,19 +42,24 @@ data class SqlSelect(val projection: List<SqlExpr>, val selection: SqlExpr?, val
  */
 interface PrattParser {
 
-    fun nextPrecedence(): Int
-    fun parsePrefix(): SqlExpr?
-    fun parseInfix(left: SqlExpr, precedence: Int): SqlExpr
-
+    /** Parse an expression */
     fun parse(precedence: Int = 0): SqlExpr? {
-        var left = parsePrefix()
-        println("parse() precedence=$precedence, left=$left")
-        while (precedence < nextPrecedence()) {
-            left = parseInfix(left!!, nextPrecedence())
+        var left = parsePrefix() ?: return null
+        while ( precedence < nextPrecedence()) {
+            left = parseInfix(left, nextPrecedence())
         }
-        println("parse() returning $left")
         return left
     }
+
+    /** Get the precedence of the next token */
+    fun nextPrecedence(): Int
+
+    /** Parse the next prefix expression */
+    fun parsePrefix(): SqlExpr?
+
+    /** Parse the next infix expression */
+    fun parseInfix(left: SqlExpr, precedence: Int): SqlExpr
+
 }
 
 class SqlParser(val tokens: TokenStream) : PrattParser {
