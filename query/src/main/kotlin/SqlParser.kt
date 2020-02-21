@@ -44,11 +44,11 @@ interface PrattParser {
 
     /** Parse an expression */
     fun parse(precedence: Int = 0): SqlExpr? {
-        var left = parsePrefix() ?: return null
+        var expr = parsePrefix() ?: return null
         while ( precedence < nextPrecedence()) {
-            left = parseInfix(left, nextPrecedence())
+            expr = parseInfix(expr, nextPrecedence())
         }
-        return left
+        return expr
     }
 
     /** Get the precedence of the next token */
