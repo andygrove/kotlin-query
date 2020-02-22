@@ -91,7 +91,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
     override fun parsePrefix(): SqlExpr? {
         println("parsePrefix() next token = ${tokens.peek()}")
         val token = tokens.next() ?: return null
-        return when (token) {
+        val expr = when (token) {
             is KeywordToken -> {
               when (token.s) {
                   "SELECT" -> parseSelect()
@@ -103,18 +103,22 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
             is LiteralLongToken -> SqlLong(token.s.toLong())
             else -> throw IllegalStateException("Unexpected token $token")
         }
+        println("parsePrefix() returning $expr")
+        return expr
     }
 
     override fun parseInfix(left: SqlExpr, precedence: Int): SqlExpr {
         println("parseInfix() next token = ${tokens.peek()}")
         val token = tokens.peek()
-        return when (token) {
+        val expr = when (token) {
             is OperatorToken -> {
                 tokens.next()
                 SqlBinaryExpr(left, token.s, parse(precedence) ?: throw SQLException("Error parsing infix"))
             }
             else -> throw IllegalStateException("Unexpected infix token $token")
         }
+        println("parseInfix() returning $expr")
+        return expr
     }
 
     private fun parseSelect() : SqlSelect {
@@ -132,6 +136,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
     }
 
     private fun parseExprList() : List<SqlExpr> {
+        println("parseExprList()")
         val list = mutableListOf<SqlExpr>()
         var expr = parseExpr()
         while (expr != null) {
@@ -144,6 +149,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
             }
             expr = parseExpr()
         }
+        println("parseExprList() returning $list")
         return list
     }
 

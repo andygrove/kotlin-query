@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.3.60"
+    kotlin("plugin.serialization") version "1.3.61"
 }
 
 
@@ -23,6 +24,8 @@ dependencies {
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter:5.5.2")
     testImplementation("junit:junit:4.12")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0") // JVM dependency
 
     implementation("org.apache.arrow:arrow-memory:0.16.0")
     implementation("org.apache.arrow:arrow-vector:0.16.0")

@@ -8,11 +8,25 @@ data class IdentifierToken(val s: String) : Token {
     }
 }
 
-data class LiteralStringToken(val s: String) : Token
-data class LiteralLongToken(val s: String) : Token
-data class KeywordToken(val s: String) : Token
-data class OperatorToken(val s: String) : Token
-data class PunctuationToken(val s: String) : Token
+abstract class TokenBase(val s: String) : Token {
+    override fun toString(): String {
+        return s
+    }
+
+    override fun hashCode(): Int {
+        return this.toString().hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return this.toString() == other.toString()
+    }
+}
+
+class LiteralStringToken(s: String) : TokenBase(s)
+class LiteralLongToken(s: String) : TokenBase(s)
+class KeywordToken(s: String) : TokenBase(s)
+class OperatorToken(s: String) : TokenBase(s)
+class PunctuationToken(s: String) : TokenBase(s)
 
 class TokenStream(val tokens: List<Token>) {
 
@@ -35,16 +49,23 @@ class TokenStream(val tokens: List<Token>) {
     }
 
     fun consumeKeyword(s: String): Boolean {
-        return if (peek() == KeywordToken(s)) {
+        val peek = peek()
+        println("consumeKeyword('$s') next token is $peek")
+        return if (peek == KeywordToken(s)) {
             i++
+            println("consumeKeyword() returning true")
             true
         } else {
+            println("consumeKeyword() returning false")
             false
         }
     }
 }
 
 class Tokenizer(val sql: String) {
+
+    //TODO this whole class is pretty crude and needs a lot of attention + unit tests (Hint: this would be a great
+    // place to start contributing!)
 
     val keywords = listOf("SELECT", "FROM", "WHERE", "AND", "OR", "NOT", "GROUP", "ORDER", "BY")
 
@@ -61,13 +82,15 @@ class Tokenizer(val sql: String) {
     }
 
     private fun nextToken(): Token? {
-        if (i >= sql.length) {
-            return null
-        }
 
         // skip whitespace
         while (i < sql.length && sql[i].isWhitespace()) {
             i++
+        }
+
+        // EOF check
+        if (i == sql.length) {
+            return null
         }
 
         // look for start of token
@@ -87,7 +110,10 @@ class Tokenizer(val sql: String) {
                 return IdentifierToken(s)
             }
 
-        } else if (listOf('=', '*', '/', '%', '-', '+').contains(sql[i])) {
+        } else if (listOf('=', '*', '/', '%', '-', '+', '<', '>').contains(sql[i])) {
+
+            //TODO add support for `>=`, `<=`, `<>`, and `!=`
+
             i++
             return OperatorToken(sql[i-1].toString())
 

@@ -3,7 +3,7 @@ package io.andygrove.kquery
 import org.apache.arrow.vector.types.pojo.ArrowType
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.Schema
-import java.lang.IllegalStateException
+
 import java.sql.SQLException
 
 /**
@@ -19,16 +19,8 @@ interface LogicalExpr {
     fun toField(input: LogicalPlan): Field
 }
 
-infix fun LogicalExpr.eq(value: String): Eq {
-    return Eq(this, LiteralString(value))
-}
-
-infix fun LogicalExpr.eq(value: Long): Eq {
-    return Eq(this, LiteralLong(value))
-}
-
-infix fun LogicalExpr.eq(expr: LogicalExpr): Eq {
-    return Eq(this, expr)
+infix fun LogicalExpr.eq(rhs: LogicalExpr): Eq {
+    return Eq(this, rhs)
 }
 
 /**
@@ -79,6 +71,9 @@ class LiteralString(val str: String): LogicalExpr {
 
 }
 
+/** Convenience method to create a LiteralString */
+fun lit(value: String) = LiteralString(value)
+
 /**
  * Logical expression representing a literal long value.
  */
@@ -93,6 +88,9 @@ class LiteralLong(val n: Long): LogicalExpr {
     }
 
 }
+
+/** Convenience method to create a LiteralLong */
+fun lit(value: Long) = LiteralLong(value)
 
 /**
  * Logical expression representing an equality comparison.

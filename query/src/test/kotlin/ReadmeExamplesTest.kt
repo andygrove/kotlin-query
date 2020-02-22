@@ -41,7 +41,7 @@ class ReadmeExamplesTest {
 
         // Construct a query using the DataFrame API
         val df: DataFrame = ctx.csv(employeeCsv)
-                .filter(col("state") eq "CO")
+                .filter(col("state") eq lit("CO"))
                 .select(listOf(col("id"), col("first_name"), col("last_name")))
 
         val expected =
