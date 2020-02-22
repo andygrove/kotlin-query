@@ -25,4 +25,34 @@ class DataFrameTest {
 
         assertEquals(expected, format(df.logicalPlan()))
     }
+
+    @Test
+    fun `multiplier and alias`() {
+
+        val ctx = ExecutionContext()
+
+        val df = ctx.csv(employeeCsv)
+                .filter(col("state") eq lit("CO"))
+                .select(listOf(
+                        col("id"),
+                        col("first_name"),
+                        col("last_name"),
+                        col("salary"),
+                        (col("salary") mult lit(0.1)) alias "bonus"))
+                .filter(col("bonus") gt lit(1000))
+
+
+
+        val expected =
+                "Selection: #bonus > 1000\n" +
+                "\tProjection: #id, #first_name, #last_name, #salary, #salary * 0.1 as bonus\n" +
+                "\t\tSelection: #state = 'CO'\n" +
+                "\t\t\tScan: src/test/data/employee.csv; projection=None\n"
+
+        val actual = format(df.logicalPlan())
+
+        println(actual)
+        
+        assertEquals(expected, actual)
+    }
 }

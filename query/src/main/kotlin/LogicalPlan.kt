@@ -1,5 +1,6 @@
 package io.andygrove.kquery
 
+import org.apache.arrow.vector.types.FloatingPointPrecision
 import org.apache.arrow.vector.types.pojo.ArrowType
 import org.apache.arrow.vector.types.pojo.Field;
 import org.apache.arrow.vector.types.pojo.Schema
@@ -17,10 +18,6 @@ interface LogicalExpr {
      * a particular input.
      */
     fun toField(input: LogicalPlan): Field
-}
-
-infix fun LogicalExpr.eq(rhs: LogicalExpr): Eq {
-    return Eq(this, rhs)
 }
 
 /**
@@ -93,18 +90,103 @@ class LiteralLong(val n: Long): LogicalExpr {
 fun lit(value: Long) = LiteralLong(value)
 
 /**
- * Logical expression representing an equality comparison.
+ * Logical expression representing a literal double value.
  */
-class Eq(val l: LogicalExpr, val r: LogicalExpr): LogicalExpr {
+class LiteralDouble(val n: Double): LogicalExpr {
 
     override fun toField(input: LogicalPlan): Field {
-        return Field.nullablePrimitive("eq", ArrowType.Bool())
+        return Field.nullable(n.toString(), ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE))
     }
 
     override fun toString(): String {
-        return "$l = $r"
+        return n.toString()
     }
 
+}
+
+/** Convenience method to create a LiteralDouble */
+fun lit(value: Double) = LiteralDouble(value)
+
+abstract class Comparison(private val name: String,
+                          private val op: String,
+                          val l: LogicalExpr,
+                          val r: LogicalExpr) : LogicalExpr {
+
+    override fun toField(input: LogicalPlan): Field {
+        return Field.nullablePrimitive(name, ArrowType.Bool())
+    }
+
+    override fun toString(): String {
+        return "$l $op $r"
+    }
+}
+/** Logical expression representing an equality (`=`) comparison */
+class Eq(l: LogicalExpr, r: LogicalExpr): Comparison("eq", "=", l, r)
+
+/** Logical expression representing an inequality (`!=`) comparison */
+class Neq(l: LogicalExpr, r: LogicalExpr): Comparison("neq", "!=", l, r)
+
+/** Logical expression representing a greater than (`>`) comparison */
+class Gt(l: LogicalExpr, r: LogicalExpr): Comparison("gt", ">", l, r)
+
+/** Logical expression representing a greater than or equals (`>=`) comparison */
+class GtEq(l: LogicalExpr, r: LogicalExpr): Comparison("gteq", ">=", l, r)
+
+/** Logical expression representing a less than (`<`) comparison */
+class Lt(l: LogicalExpr, r: LogicalExpr): Comparison("lt", "<", l, r)
+
+/** Logical expression representing a less than or equals (`<=`) comparison */
+class LtEq(l: LogicalExpr, r: LogicalExpr): Comparison("lteq", "<=", l, r)
+
+/** Convenience method to create an equality expression using an infix operator */
+infix fun LogicalExpr.eq(rhs: LogicalExpr): LogicalExpr { return Eq(this, rhs) }
+
+/** Convenience method to create an inequality expression using an infix operator */
+infix fun LogicalExpr.neq(rhs: LogicalExpr): LogicalExpr { return Neq(this, rhs) }
+
+/** Convenience method to create a greater than expression using an infix operator */
+infix fun LogicalExpr.gt(rhs: LogicalExpr): LogicalExpr { return Gt(this, rhs) }
+
+/** Convenience method to create a greater than or equals expression using an infix operator */
+infix fun LogicalExpr.gteq(rhs: LogicalExpr): LogicalExpr { return GtEq(this, rhs) }
+
+/** Convenience method to create a less than expression using an infix operator */
+infix fun LogicalExpr.lt(rhs: LogicalExpr): LogicalExpr { return Lt(this, rhs) }
+
+/** Convenience method to create a less than or equals expression using an infix operator */
+infix fun LogicalExpr.lteq(rhs: LogicalExpr): LogicalExpr { return LtEq(this, rhs) }
+
+class Mult(private val expr: LogicalExpr, private val rhs: LogicalExpr) : LogicalExpr {
+
+    override fun toField(input: LogicalPlan): Field {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
+    override fun toString(): String {
+        return "$expr * $rhs"
+    }
+}
+
+/** Convenience method to create a multiplication expression using an infix operator */
+infix fun LogicalExpr.mult(rhs: LogicalExpr): Mult {
+    return Mult(this, rhs)
+}
+
+
+/** Aliased expression e.g. `expr AS alias`. */
+class Alias(private val expr: LogicalExpr, private val alias: String) : LogicalExpr {
+    override fun toField(input: LogicalPlan): Field {
+        return Field.nullablePrimitive(alias, expr.toField(input).type as ArrowType.PrimitiveType)
+    }
+
+    override fun toString(): String {
+        return "$expr as $alias"
+    }
+}
+
+/** Convenience method to wrap the current expression in an alias using an infix operator */
+infix fun LogicalExpr.alias(alias: String) : Alias {
+    return Alias(this, alias)
 }
 
 /**
