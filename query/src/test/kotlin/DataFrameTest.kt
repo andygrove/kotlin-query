@@ -41,8 +41,6 @@ class DataFrameTest {
                         (col("salary") mult lit(0.1)) alias "bonus"))
                 .filter(col("bonus") gt lit(1000))
 
-
-
         val expected =
                 "Selection: #bonus > 1000\n" +
                 "\tProjection: #id, #first_name, #last_name, #salary, #salary * 0.1 as bonus\n" +
@@ -52,7 +50,7 @@ class DataFrameTest {
         val actual = format(df.logicalPlan())
 
         println(actual)
-        
+
         assertEquals(expected, actual)
     }
 }
