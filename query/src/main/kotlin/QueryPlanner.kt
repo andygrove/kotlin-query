@@ -29,6 +29,12 @@ class QueryPlanner {
         is LiteralDouble -> LiteralDoublePExpr(expr.n)
         is LiteralString -> LiteralStringPExpr(expr.str)
         is ColumnIndex -> ColumnPExpr(expr.i)
+        is Alias -> {
+            // note that there is no physical expression for an alias since the alias
+            // only affects the name using in the planning phase and not how the aliased
+            // expression is executed
+            createPhysicalExpr(expr.expr, input)
+        }
         is Column -> {
             val i = input.schema().fields.indexOfFirst { it.name == expr.name }
             if (i == -1) {
@@ -37,6 +43,11 @@ class QueryPlanner {
             ColumnPExpr(i)
         }
         is Eq -> EqExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
+        //TODO other comparison ops
+        is Mult -> MultExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
+        //TODO other math ops
+        //TODO boolean ops
+        //is And -> AndExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
         else -> throw IllegalStateException(expr.javaClass.toString())
     }
 }

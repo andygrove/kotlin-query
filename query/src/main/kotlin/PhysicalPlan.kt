@@ -23,6 +23,7 @@ class ColumnPExpr(val i: Int) : PhysicalExpr {
     }
 }
 
+
 abstract class ComparisonPExpr(val l: PhysicalExpr, val r: PhysicalExpr) : PhysicalExpr {
     override fun evaluate(input: RecordBatch): FieldVector {
         val ll = l.evaluate(input)
@@ -50,6 +51,43 @@ class EqExpr(l: PhysicalExpr, r: PhysicalExpr): ComparisonPExpr(l,r) {
                     } else {
                         v.set(it, 0)
                     }
+                }
+            }
+            else -> TODO()
+        }
+        v.valueCount = l.valueCount
+        return v
+    }
+}
+
+abstract class BinaryPExpr(val l: PhysicalExpr, val r: PhysicalExpr) : PhysicalExpr {
+    override fun evaluate(input: RecordBatch): FieldVector {
+        val ll = l.evaluate(input)
+        val rr = r.evaluate(input)
+        return evaluate(ll, rr)
+    }
+
+    abstract fun evaluate(l: FieldVector, r: FieldVector) : FieldVector
+}
+
+class MultExpr(l: PhysicalExpr, r: PhysicalExpr): BinaryPExpr(l,r) {
+
+    override fun evaluate(l: FieldVector, r: FieldVector): FieldVector {
+
+        assert(l.valueCount == r.valueCount)
+        val v = Float8Vector("v", RootAllocator(Long.MAX_VALUE))
+        v.allocateNew()
+
+        //TODO make this generic so it supports all numeric types .. this is hard coded for the one test that uses it
+
+        when (l) {
+            is BigIntVector -> {
+                val rr = r as Float8Vector
+                (0 until l.valueCount).forEach {
+                    val leftValue = l.get(it)
+                    val rightValue = rr.get(it)
+                    //println("${String(leftValue)} == ${String(rightValue)} ?")
+                    v.set(it, leftValue.toDouble() * rightValue)
                 }
             }
             else -> TODO()
@@ -126,11 +164,11 @@ class ProjectionExec(val input: PhysicalPlan, val schema: Schema, val expr: List
             println("projection input:\n${batch.toCSV()}")
 
             val fieldVectors = expr.map { it.evaluate(batch) }
-            val batch = RecordBatch(schema, VectorSchemaRoot(fieldVectors))
+            val projectedBatch = RecordBatch(schema, VectorSchemaRoot(fieldVectors))
 
-            println("projection output:\n${batch.toCSV()}")
+            println("projection output:\n${projectedBatch.toCSV()}")
 
-            batch
+            projectedBatch
         }
     }
 }
@@ -174,7 +212,7 @@ class SelectionExec(val input: PhysicalPlan, val expr: PhysicalExpr) : PhysicalP
                         }
                     }
                 filteredVector.valueCount = count
-                return filteredVector
+                filteredVector
             }
             else -> TODO()
         }

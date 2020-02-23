@@ -1,0 +1,76 @@
+package io.andygrove.kquery
+
+import org.junit.Test
+import org.junit.jupiter.api.TestInstance
+import java.io.File
+import kotlin.test.assertEquals
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class ExecutionTest {
+
+    val dir = "src/test/data"
+
+    @Test
+    fun `employees in CO using DataFrame`() {
+        // Create a context
+        val ctx = ExecutionContext()
+
+        // Construct a query using the DataFrame API
+        val df = ctx.csv(File(dir, "employee.csv").absolutePath)
+                .filter(col("state") eq lit("CO"))
+                .select(listOf(col("id"), col("first_name"), col("last_name")))
+
+        val batches = df.collect().asSequence().toList()
+        assertEquals(1, batches.size)
+
+        val batch = batches.first()
+        assertEquals(
+                "2,Gregg,Langford\n" +
+                "3,John,Travis\n", batch.toCSV())
+    }
+
+    @Test
+    fun `employees in CA using SQL`() {
+        // Create a context
+        val ctx = ExecutionContext()
+
+        val employee = ctx.csv(File(dir, "employee.csv").absolutePath)
+        ctx.register("employee", employee)
+
+        // Construct a query using the DataFrame API
+        val df = ctx.sql("SELECT id, first_name, last_name FROM employee WHERE state = 'CA'")
+
+        val batches = df.collect().asSequence().toList()
+        assertEquals(1, batches.size)
+
+        val batch = batches.first()
+        assertEquals("1,Bill,Hopkins\n"
+                , batch.toCSV())
+    }
+
+    @Test
+    fun `bonuses in CA using SQL and DataFrame`() {
+        // Create a context
+        val ctx = ExecutionContext()
+
+        // construct a query using the DataFrame API
+        val caEmployees = ctx.csv(File(dir, "employee.csv").absolutePath)
+                .filter(col("state") eq lit("CA"))
+                .select(listOf(col("id"), col("first_name"), col("last_name"), col("salary")))
+
+        // register the DataFrame as a table
+        ctx.register("ca_employees", caEmployees)
+
+        // Construct a query using the DataFrame API
+        val df = ctx.sql("SELECT id, first_name, last_name, salary FROM ca_employees")
+        //val df = ctx.sql("SELECT id, first_name, last_name, salary * 0.1 AS bonus FROM ca_employees")
+
+        val batches = df.collect().asSequence().toList()
+        assertEquals(1, batches.size)
+
+        val batch = batches.first()
+        assertEquals("1,Bill,Hopkins,12000\n"
+                , batch.toCSV())
+    }
+
+}

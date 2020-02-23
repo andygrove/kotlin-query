@@ -171,14 +171,16 @@ infix fun LogicalExpr.lt(rhs: LogicalExpr): LogicalExpr { return Lt(this, rhs) }
 /** Convenience method to create a less than or equals expression using an infix operator */
 infix fun LogicalExpr.lteq(rhs: LogicalExpr): LogicalExpr { return LtEq(this, rhs) }
 
-class Mult(private val expr: LogicalExpr, private val rhs: LogicalExpr) : LogicalExpr {
+class Mult(val l: LogicalExpr, val r: LogicalExpr) : LogicalExpr {
+
+    //TODO type checking
 
     override fun toField(input: LogicalPlan): Field {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return Field.nullablePrimitive("mult", l.toField(input).type as ArrowType.PrimitiveType)
     }
 
     override fun toString(): String {
-        return "$expr * $rhs"
+        return "$l * $r"
     }
 }
 
