@@ -25,6 +25,11 @@ data class SqlLong(val value: Long) : SqlExpr {
     override fun toString() = "$value"
 }
 
+/** SQL literal double */
+data class SqlDouble(val value: Double) : SqlExpr {
+    override fun toString() = "$value"
+}
+
 //TODO: support other expression types
 
 //data class Function() : SqlExpr
@@ -101,6 +106,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
             is IdentifierToken -> SqlIdentifier(token.s)
             is LiteralStringToken -> SqlString(token.s)
             is LiteralLongToken -> SqlLong(token.s.toLong())
+            is LiteralDoubleToken -> SqlDouble(token.s.toDouble())
             else -> throw IllegalStateException("Unexpected token $token")
         }
         println("parsePrefix() returning $expr")

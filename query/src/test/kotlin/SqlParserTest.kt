@@ -21,7 +21,6 @@ class SqlParserTest {
     }
 
     @Test
-    @Ignore
     fun `1 * 2 + 3`() {
         val tokens = tokenize("1 * 2 + 3")
         val ast = SqlParser(tokens).parse()
@@ -35,7 +34,6 @@ class SqlParserTest {
     }
 
     @Test
-    @Ignore
     fun `parse simple SELECT`() {
         val tokens = tokenize("SELECT id, first_name, last_name FROM employee")
         val ast = SqlParser(tokens).parse()
@@ -47,7 +45,18 @@ class SqlParserTest {
     }
 
     @Test
-    @Ignore
+    fun `projection with binary expression`() {
+        val tokens = tokenize("SELECT salary * 0.1 FROM employee")
+        val ast = SqlParser(tokens).parse()
+        println(ast)
+
+        val select = ast as SqlSelect
+        assertEquals(listOf(SqlBinaryExpr(SqlIdentifier("salary"), "*", SqlDouble(0.1))), select.projection)
+
+        assertEquals("employee", select.tableName)
+    }
+
+    @Test
     fun `parse SELECT with WHERE`() {
         val tokens = tokenize("SELECT id, first_name, last_name FROM employee WHERE state = 'CO'")
         val ast = SqlParser(tokens).parse()

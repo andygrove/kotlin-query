@@ -27,13 +27,13 @@ class QueryPlanner {
     fun createPhysicalExpr(expr: LogicalExpr, input: LogicalPlan): PhysicalExpr = when (expr) {
         is LiteralLong -> TODO()
         is LiteralString -> TODO()
-        is ColumnIndex -> ColumnExpr(expr.i)
+        is ColumnIndex -> ColumnPExpr(expr.i)
         is Column -> {
             val i = input.schema().fields.indexOfFirst { it.name == expr.name }
             if (i == -1) {
                 throw SQLException("No column named '${expr.name}'")
             }
-            ColumnExpr(i)
+            ColumnPExpr(i)
         }
         is Eq -> EqExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
         else -> throw IllegalStateException(expr.javaClass.toString())

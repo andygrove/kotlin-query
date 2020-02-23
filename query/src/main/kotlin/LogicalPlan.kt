@@ -107,19 +107,28 @@ class LiteralDouble(val n: Double): LogicalExpr {
 /** Convenience method to create a LiteralDouble */
 fun lit(value: Double) = LiteralDouble(value)
 
-abstract class Comparison(private val name: String,
-                          private val op: String,
+abstract class BinaryExpr(val name: String,
+                          val op: String,
                           val l: LogicalExpr,
                           val r: LogicalExpr) : LogicalExpr {
-
-    override fun toField(input: LogicalPlan): Field {
-        return Field.nullablePrimitive(name, ArrowType.Bool())
-    }
 
     override fun toString(): String {
         return "$l $op $r"
     }
 }
+
+/** Comparison expressions are binary expressions that return a boolean type */
+abstract class Comparison(name: String,
+                          op: String,
+                          l: LogicalExpr,
+                          r: LogicalExpr) : BinaryExpr(name, op, l, r) {
+
+    override fun toField(input: LogicalPlan): Field {
+        return Field.nullablePrimitive(name, ArrowType.Bool())
+    }
+
+}
+
 /** Logical expression representing an equality (`=`) comparison */
 class Eq(l: LogicalExpr, r: LogicalExpr): Comparison("eq", "=", l, r)
 

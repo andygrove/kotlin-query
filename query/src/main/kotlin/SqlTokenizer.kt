@@ -24,6 +24,7 @@ abstract class TokenBase(val s: String) : Token {
 
 class LiteralStringToken(s: String) : TokenBase(s)
 class LiteralLongToken(s: String) : TokenBase(s)
+class LiteralDoubleToken(s: String) : TokenBase(s)
 class KeywordToken(s: String) : TokenBase(s)
 class OperatorToken(s: String) : TokenBase(s)
 class PunctuationToken(s: String) : TokenBase(s)
@@ -127,13 +128,18 @@ class Tokenizer(val sql: String) {
             i++
             return LiteralStringToken(sql.substring(start, i-1))
 
-        } else if (sql[i].isDigit()) {
-            //TODO support floating point numbers
+        } else if (sql[i].isDigit() || sql[i] == '.') {
+            //TODO support floating point numbers correctly
             val start = i
-            while (i < sql.length && sql[i].isDigit()) {
+            while (i < sql.length && (sql[i].isDigit() || sql[i] == '.')) {
                 i++
             }
-            return LiteralLongToken(sql.substring(start, i))
+            val str = sql.substring(start, i)
+            if (str.contains('.')) {
+                return LiteralDoubleToken(str)
+            } else {
+                return LiteralLongToken(str)
+            }
 
         } else {
             throw IllegalStateException("Invalid character '${sql[i]}' at position $i in '$sql'")

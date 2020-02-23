@@ -17,17 +17,24 @@ interface PhysicalExpr {
     fun evaluate(input: RecordBatch): FieldVector
 }
 
-class ColumnExpr(val i: Int) : PhysicalExpr {
+class ColumnPExpr(val i: Int) : PhysicalExpr {
     override fun evaluate(input: RecordBatch): FieldVector {
         return input.field(i)
     }
 }
 
-class EqExpr(val l: PhysicalExpr, val r: PhysicalExpr): PhysicalExpr {
+abstract class ComparisonPExpr(val l: PhysicalExpr, val r: PhysicalExpr) : PhysicalExpr {
     override fun evaluate(input: RecordBatch): FieldVector {
         val ll = l.evaluate(input)
         val rr = r.evaluate(input)
+        return compare(ll, rr)
+    }
 
+    abstract fun compare(l: FieldVector, r: FieldVector) : FieldVector
+}
+
+class EqExpr(l: PhysicalExpr, r: PhysicalExpr): ComparisonPExpr(l,r) {
+    override fun compare(l: FieldVector, r: FieldVector): FieldVector {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
