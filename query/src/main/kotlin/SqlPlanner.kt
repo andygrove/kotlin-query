@@ -10,25 +10,23 @@ class SqlPlanner {
     /**
      * Create logical plan from parsed SQL statement.
      */
-    fun createLogicalPlan(select: SqlSelect, tables: Map<String, DataFrame>) : LogicalPlan {
+    fun createDataFrame(select: SqlSelect, tables: Map<String, DataFrame>) : DataFrame {
 
-        val df = tables[select.tableName] ?: throw SQLException("No table named '${select.tableName}'")
+        // get a reference to the data source
+        var df = tables[select.tableName] ?: throw SQLException("No table named '${select.tableName}'")
 
-        // TODO selection
-        // TODO aggregate
+        // apply projection
+        df = df.select(select.projection.map { createLogicalExpr(it, df) })
 
-        val input = df.logicalPlan()
-
-        val projection = Projection(input, select.projection.map { createLogicalExpr(it, input) })
-
+        // wrap in a selection (filter)
         if (select.selection != null) {
-            return Selection(projection, createLogicalExpr(select.selection, projection))
-        } else {
-            return projection
+            df = df.filter(createLogicalExpr(select.selection, df))
         }
+
+        return df
     }
 
-    private fun createLogicalExpr(expr: SqlExpr, input: LogicalPlan) : LogicalExpr {
+    private fun createLogicalExpr(expr: SqlExpr, input: DataFrame) : LogicalExpr {
         return when (expr) {
             is SqlIdentifier -> Column(expr.id)
             is SqlString -> LiteralString(expr.value)

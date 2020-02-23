@@ -26,8 +26,8 @@ class ExecutionContext {
     fun sql(sql: String): DataFrame {
         val tokens = SqlTokenizer(sql).tokenize()
         val ast = SqlParser(tokens).parse() as SqlSelect
-        val logicalPlan = SqlPlanner().createLogicalPlan(ast, tables)
-        return DataFrameImpl(this, logicalPlan)
+        val df = SqlPlanner().createDataFrame(ast, tables)
+        return DataFrameImpl(this, df.logicalPlan())
     }
 
     /** Get a DataFrame representing the specified CSV file */
