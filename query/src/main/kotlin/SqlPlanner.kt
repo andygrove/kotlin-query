@@ -1,14 +1,14 @@
 package io.andygrove.kquery
 
-import org.slf4j.LoggerFactory
 import java.sql.SQLException
+import java.util.logging.Logger
 
 /**
  * SqlPlanner creates a logical plan from a parsed SQL statement.
  */
 class SqlPlanner {
 
-    private val logger = LoggerFactory.getLogger(SqlPlanner::class.java)
+    private val logger = Logger.getLogger(SqlPlanner::class.simpleName)
 
     /**
      * Create logical plan from parsed SQL statement.

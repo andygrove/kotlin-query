@@ -26,6 +26,7 @@ dependencies {
     testImplementation("junit:junit:4.12")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.14.0") // JVM dependency
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines:0.19.2")
 
     implementation("org.apache.arrow:arrow-memory:0.16.0")
     implementation("org.apache.arrow:arrow-vector:0.16.0")
@@ -36,18 +37,13 @@ dependencies {
     implementation("org.apache.parquet:parquet-hadoop:1.11.0")
 
     implementation("com.github.doyaaaaaken:kotlin-csv-jvm:0.7.3")
-
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines:0.19.2")
-
-    implementation("org.slf4j:slf4j-api:1.7.25")
-    implementation("ch.qos.logback:logback-classic:1.2.3")
-    implementation("ch.qos.logback:logback-core:1.2.3")
 }
 
-//
+
 //tasks.test {
 //    useJUnitPlatform()
 //    testLogging {
 //        events("passed", "skipped", "failed")
 //    }
 //}
+

@@ -1,6 +1,6 @@
 package io.andygrove.kquery
 
-import org.slf4j.LoggerFactory
+import java.util.logging.Logger
 
 interface Token
 
@@ -33,7 +33,7 @@ class PunctuationToken(text: String) : TokenBase(text)
 
 class TokenStream(val tokens: List<Token>) {
 
-    private val logger = LoggerFactory.getLogger(TokenStream::class.java)
+    private val logger = Logger.getLogger(TokenStream::class.simpleName)
 
     var i = 0
 
@@ -55,13 +55,13 @@ class TokenStream(val tokens: List<Token>) {
 
     fun consumeKeyword(s: String): Boolean {
         val peek = peek()
-        logger.trace("consumeKeyword('$s') next token is $peek")
+        logger.fine("consumeKeyword('$s') next token is $peek")
         return if (peek == KeywordToken(s)) {
             i++
-            logger.trace("consumeKeyword() returning true")
+            logger.fine("consumeKeyword() returning true")
             true
         } else {
-            logger.trace("consumeKeyword() returning false")
+            logger.fine("consumeKeyword() returning false")
             false
         }
     }
@@ -69,7 +69,7 @@ class TokenStream(val tokens: List<Token>) {
 
 class SqlTokenizer(val sql: String) {
 
-    private val logger = LoggerFactory.getLogger(SqlTokenizer::class.java)
+    private val logger = Logger.getLogger(SqlTokenizer::class.simpleName)
 
     //TODO this whole class is pretty crude and needs a lot of attention + unit tests (Hint: this would be a great
     // place to start contributing!)

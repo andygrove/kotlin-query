@@ -25,8 +25,9 @@ class QueryPlanner {
      * Create a physical expression from a logical expression.
      */
     fun createPhysicalExpr(expr: LogicalExpr, input: LogicalPlan): PhysicalExpr = when (expr) {
-        is LiteralLong -> TODO()
-        is LiteralString -> TODO()
+        is LiteralLong -> LiteralLongPExpr(expr.n)
+        is LiteralDouble -> LiteralDoublePExpr(expr.n)
+        is LiteralString -> LiteralStringPExpr(expr.str)
         is ColumnIndex -> ColumnPExpr(expr.i)
         is Column -> {
             val i = input.schema().fields.indexOfFirst { it.name == expr.name }

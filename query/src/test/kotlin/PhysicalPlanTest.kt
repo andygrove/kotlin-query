@@ -3,35 +3,49 @@ package io.andygrove.kquery
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
+import java.io.File
+import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PhysicalPlanTest {
 
-    val employeeCsv = "src/test/data/employee.csv"
-    //id,first_name,last_name,state,job_title,salary
+    val dir = "src/test/data"
 
     @Test
-    @Ignore
-    fun `query with projection and selection`() {
-        // create a plan to represent the data source
-        val csv = CsvDataSource(employeeCsv, 10)
-        // create a plan to represent the scan of the data source (FROM)
-        val scan = Scan("employee", csv, listOf())
-        // create a plan to represent the selection (WHERE)
-        val filterExpr = Eq(col("state"), LiteralString("CO"))
-        val selection = Selection(scan, filterExpr)
-        // create a plan to represent the projection (SELECT)
-        val projectionList = listOf(col("id"), col("first_name"), col("last_name"))
-        val projection = Projection(selection, projectionList)
-        // print the plan
-        println(format(projection))
+    fun `employees in CO`() {
+        // Create a context
+        val ctx = ExecutionContext()
 
-        val physicalPlan = QueryPlanner().createPhysicalPlan(projection)
+        // Construct a query using the DataFrame API
+        val df = ctx.csv(File(dir, "employee.csv").absolutePath)
+                .filter(col("state") eq lit("CO"))
+                .select(listOf(col("id"), col("first_name"), col("last_name")))
 
-        physicalPlan.execute().forEach { batch ->
-            println("got batch with ${batch.schema.fields.size} cols and ${batch.field(0).valueCount} rows")
-        }
+        val batches = df.collect().asSequence().toList()
+        assertEquals(1, batches.size)
+
+        val batch = batches.first()
+        assertEquals(
+                "2,Gregg,Langford\n" +
+                "3,John,Travis\n", batch.toCSV())
     }
 
+    @Test
+    fun `employees in CA`() {
+        // Create a context
+        val ctx = ExecutionContext()
+
+        // Construct a query using the DataFrame API
+        val df = ctx.csv(File(dir, "employee.csv").absolutePath)
+                .filter(col("state") eq lit("CA"))
+                .select(listOf(col("id"), col("first_name"), col("last_name")))
+
+        val batches = df.collect().asSequence().toList()
+        assertEquals(1, batches.size)
+
+        val batch = batches.first()
+        assertEquals("1,Bill,Hopkins\n"
+                , batch.toCSV())
+    }
 
 }

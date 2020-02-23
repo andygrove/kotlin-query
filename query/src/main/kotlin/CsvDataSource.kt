@@ -8,6 +8,7 @@ import org.apache.arrow.vector.types.pojo.ArrowType
 import org.apache.arrow.vector.types.pojo.Field
 import org.apache.arrow.vector.types.pojo.Schema
 import java.io.File
+import java.util.logging.Logger
 
 /**
  * Simple CSV data source that assumes that the first line contains field names and that all values are strings.
@@ -16,6 +17,8 @@ import java.io.File
  * a streaming version later on.
  */
 class CsvDataSource(filename: String, private val batchSize: Int) : DataSource {
+
+    private val logger = Logger.getLogger(CsvDataSource::class.simpleName)
 
     private val rows: List<List<String>> = CsvReader().readAll(File(filename))
 
@@ -26,23 +29,42 @@ class CsvDataSource(filename: String, private val batchSize: Int) : DataSource {
     }
 
     override fun scan(columns: List<Int>): Iterable<RecordBatch> {
-        return rows.asSequence().drop(1).chunked(batchSize).map { rows ->
-            val root = VectorSchemaRoot.create(schema, RootAllocator(Long.MAX_VALUE))
-            root.allocateNew()
-            root.rowCount = rows.size
+        logger.info("scan()")
 
-            root.fieldVectors.withIndex().forEach { field ->
-                field.value.valueCount = rows.size
-                when (field.value) {
-                    is VarCharVector -> rows.withIndex().forEach { row ->
-                        val value = row.value.toString()
-                        (field.value as VarCharVector).set(row.index, value.toByteArray())
-                    }
-                    else -> throw UnsupportedOperationException()
+        //TODO don't ignore projection
+
+        val withoutHeader = rows.asSequence()
+                .drop(1)
+
+        return withoutHeader
+                .chunked(batchSize)
+                .map { createBatch(it) }
+                .asIterable()
+    }
+
+    private fun createBatch(rows: List<List<String>>) : RecordBatch {
+        logger.info("createBatch() rows=$rows")
+
+        val root = VectorSchemaRoot.create(schema, RootAllocator(Long.MAX_VALUE))
+        root.allocateNew()
+        root.rowCount = rows.size
+
+        root.fieldVectors.withIndex().forEach { field ->
+            when (field.value) {
+                is VarCharVector -> rows.withIndex().forEach { row ->
+                    val value = row.value[field.index]
+                    (field.value as VarCharVector).set(row.index, value.toByteArray())
                 }
+                else -> TODO()
             }
-            RecordBatch(schema, root)
-        }.asIterable()
+            field.value.valueCount = rows.size
+        }
+
+        val batch = RecordBatch(schema, root)
+
+        logger.info("Created batch:\n${batch.toCSV()}")
+
+        return batch
     }
 }
 
