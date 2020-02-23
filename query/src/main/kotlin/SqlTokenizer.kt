@@ -2,15 +2,15 @@ package io.andygrove.kquery
 
 interface Token
 
-data class IdentifierToken(val s: String) : Token {
+data class IdentifierToken(val text: String) : Token {
     override fun toString(): String {
-        return s
+        return text
     }
 }
 
-abstract class TokenBase(val s: String) : Token {
+abstract class TokenBase(val text: String) : Token {
     override fun toString(): String {
-        return s
+        return text
     }
 
     override fun hashCode(): Int {
@@ -22,12 +22,12 @@ abstract class TokenBase(val s: String) : Token {
     }
 }
 
-class LiteralStringToken(s: String) : TokenBase(s)
-class LiteralLongToken(s: String) : TokenBase(s)
-class LiteralDoubleToken(s: String) : TokenBase(s)
-class KeywordToken(s: String) : TokenBase(s)
-class OperatorToken(s: String) : TokenBase(s)
-class PunctuationToken(s: String) : TokenBase(s)
+class LiteralStringToken(text: String) : TokenBase(text)
+class LiteralLongToken(text: String) : TokenBase(text)
+class LiteralDoubleToken(text: String) : TokenBase(text)
+class KeywordToken(text: String) : TokenBase(text)
+class OperatorToken(text: String) : TokenBase(text)
+class PunctuationToken(text: String) : TokenBase(text)
 
 class TokenStream(val tokens: List<Token>) {
 

@@ -73,14 +73,14 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         val token = tokens.peek() ?: return 0
         val precedence = when (token) {
             is KeywordToken -> {
-                when (token.s) {
+                when (token.text) {
                     "OR" -> 20
                     "AND" -> 30
                     else -> 0
                 }
             }
             is OperatorToken -> {
-                when (token.s) {
+                when (token.text) {
                     "<", "<=", "=", "!=", ">=", ">" -> 40
                     "+", "-" -> 50
                     "*", "/" -> 60
@@ -98,15 +98,15 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         val token = tokens.next() ?: return null
         val expr = when (token) {
             is KeywordToken -> {
-              when (token.s) {
+              when (token.text) {
                   "SELECT" -> parseSelect()
-                  else -> throw IllegalStateException("Unexpected keyword ${token.s}")
+                  else -> throw IllegalStateException("Unexpected keyword ${token.text}")
               }
             }
-            is IdentifierToken -> SqlIdentifier(token.s)
-            is LiteralStringToken -> SqlString(token.s)
-            is LiteralLongToken -> SqlLong(token.s.toLong())
-            is LiteralDoubleToken -> SqlDouble(token.s.toDouble())
+            is IdentifierToken -> SqlIdentifier(token.text)
+            is LiteralStringToken -> SqlString(token.text)
+            is LiteralLongToken -> SqlLong(token.text.toLong())
+            is LiteralDoubleToken -> SqlDouble(token.text.toDouble())
             else -> throw IllegalStateException("Unexpected token $token")
         }
         println("parsePrefix() returning $expr")
@@ -119,7 +119,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         val expr = when (token) {
             is OperatorToken -> {
                 tokens.next()
-                SqlBinaryExpr(left, token.s, parse(precedence) ?: throw SQLException("Error parsing infix"))
+                SqlBinaryExpr(left, token.text, parse(precedence) ?: throw SQLException("Error parsing infix"))
             }
             else -> throw IllegalStateException("Unexpected infix token $token")
         }
