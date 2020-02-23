@@ -30,12 +30,15 @@ data class SqlDouble(val value: Double) : SqlExpr {
     override fun toString() = "$value"
 }
 
+/** SQL aliased expression */
+data class SqlAlias(val expr: SqlExpr, val alias: String) : SqlExpr
+
 //TODO: support other expression types
 
 //data class Function() : SqlExpr
 //data class UnaryExpr() : SqlExpr
 //data class CastExpr() : SqlExpr
-//data class AliasExpr() : SqlExpr
+
 
 interface SqlRelation : SqlExpr
 

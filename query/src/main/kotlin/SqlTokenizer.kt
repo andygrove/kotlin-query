@@ -63,12 +63,12 @@ class TokenStream(val tokens: List<Token>) {
     }
 }
 
-class Tokenizer(val sql: String) {
+class SqlTokenizer(val sql: String) {
 
     //TODO this whole class is pretty crude and needs a lot of attention + unit tests (Hint: this would be a great
     // place to start contributing!)
 
-    val keywords = listOf("SELECT", "FROM", "WHERE", "AND", "OR", "NOT", "GROUP", "ORDER", "BY")
+    val keywords = listOf("SELECT", "FROM", "WHERE", "AND", "OR", "NOT", "GROUP", "ORDER", "BY", "AS")
 
     var i = 0
 

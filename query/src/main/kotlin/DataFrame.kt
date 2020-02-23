@@ -24,7 +24,7 @@ class ExecutionContext {
 
     /** Create a DataFrame for the given SQL Select */
     fun sql(sql: String): DataFrame {
-        val tokens = Tokenizer(sql).tokenize()
+        val tokens = SqlTokenizer(sql).tokenize()
         val ast = SqlParser(tokens).parse() as SqlSelect
         val logicalPlan = SqlPlanner().createLogicalPlan(ast, tables)
         return DataFrameImpl(this, logicalPlan)

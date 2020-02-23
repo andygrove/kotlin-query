@@ -49,6 +49,6 @@ class SqlTokenizerTest {
     }
 
     private fun tokenize(sql: String) : List<Token> {
-        return Tokenizer(sql).tokenize().tokens
+        return SqlTokenizer(sql).tokenize().tokens
     }
 }

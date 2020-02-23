@@ -57,3 +57,9 @@ See the companion book [How Query Engines Work](https://leanpub.com/how-query-en
 # Status
 
 This is a work in progress. Check back soon.
+
+# Contributing
+
+I am accepting contributions to this repository but please bear in mind that this is implementing the design outlined in the corresponding book so any contributions that do not fit into that design are unlikely to be accepted without prior discussion.
+
+If you are looking for an area to contribute to, take a look at the [open issues](https://github.com/andygrove/kotlin-query/issues).
