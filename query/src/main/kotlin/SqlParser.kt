@@ -1,5 +1,6 @@
 package io.andygrove.kquery
 
+import org.slf4j.LoggerFactory
 import java.sql.SQLException
 
 /** SQL Expression */
@@ -72,6 +73,8 @@ interface PrattParser {
 
 class SqlParser(val tokens: TokenStream) : PrattParser {
 
+    private val logger = LoggerFactory.getLogger(SqlParser::class.java)
+
     override fun nextPrecedence(): Int {
         val token = tokens.peek() ?: return 0
         val precedence = when (token) {
@@ -93,12 +96,12 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
             }
             else -> 0
         }
-        println("nextPrecedence($token) returning $precedence")
+        logger.trace("nextPrecedence($token) returning $precedence")
         return precedence
     }
 
     override fun parsePrefix(): SqlExpr? {
-        println("parsePrefix() next token = ${tokens.peek()}")
+        logger.trace("parsePrefix() next token = ${tokens.peek()}")
         val token = tokens.next() ?: return null
         val expr = when (token) {
             is KeywordToken -> {
@@ -113,12 +116,12 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
             is LiteralDoubleToken -> SqlDouble(token.text.toDouble())
             else -> throw IllegalStateException("Unexpected token $token")
         }
-        println("parsePrefix() returning $expr")
+        logger.trace("parsePrefix() returning $expr")
         return expr
     }
 
     override fun parseInfix(left: SqlExpr, precedence: Int): SqlExpr {
-        println("parseInfix() next token = ${tokens.peek()}")
+        logger.trace("parseInfix() next token = ${tokens.peek()}")
         val token = tokens.peek()
         val expr = when (token) {
             is OperatorToken -> {
@@ -140,7 +143,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
             }
             else -> throw IllegalStateException("Unexpected infix token $token")
         }
-        println("parseInfix() returning $expr")
+        logger.trace("parseInfix() returning $expr")
         return expr
     }
 
@@ -159,11 +162,11 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
     }
 
     private fun parseExprList() : List<SqlExpr> {
-        println("parseExprList()")
+        logger.trace("parseExprList()")
         val list = mutableListOf<SqlExpr>()
         var expr = parseExpr()
         while (expr != null) {
-            //println("parseExprList parsed $expr")
+            //logger.trace("parseExprList parsed $expr")
             list.add(expr)
             if (tokens.peek() == PunctuationToken(",")) {
                 tokens.next()
@@ -172,7 +175,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
             }
             expr = parseExpr()
         }
-        println("parseExprList() returning $list")
+        logger.trace("parseExprList() returning $list")
         return list
     }
 

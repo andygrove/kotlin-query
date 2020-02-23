@@ -1,11 +1,14 @@
 package io.andygrove.kquery
 
+import org.slf4j.LoggerFactory
 import java.sql.SQLException
 
 /**
  * SqlPlanner creates a logical plan from a parsed SQL statement.
  */
 class SqlPlanner {
+
+    private val logger = LoggerFactory.getLogger(SqlPlanner::class.java)
 
     /**
      * Create logical plan from parsed SQL statement.
@@ -15,15 +18,57 @@ class SqlPlanner {
         // get a reference to the data source
         var df = tables[select.tableName] ?: throw SQLException("No table named '${select.tableName}'")
 
-        // apply projection
-        df = df.select(select.projection.map { createLogicalExpr(it, df) })
+        // create the logical expressions for the projection
+        val projectionExpr = select.projection.map { createLogicalExpr(it, df) }
 
-        // wrap in a selection (filter)
-        if (select.selection != null) {
-            df = df.filter(createLogicalExpr(select.selection, df))
+        if (select.selection == null) {
+            // if there is no selection then we can just return the projection
+            return df.select(projectionExpr)
         }
 
-        return df
+        // create the logical expression to represent the selection
+        val filterExpr = createLogicalExpr(select.selection, df)
+
+        // get a list of columns references in the projection expression
+        val columnsInProjection = projectionExpr
+            .map { it.toField(df.logicalPlan()).name}
+            .toSet()
+        logger.info("projection references columns $columnsInProjection")
+
+        // get a list of columns referenced in the selection expression
+        val columnNames = mutableSetOf<String>()
+        visit(filterExpr, columnNames)
+        logger.info("selection references columns: $columnNames")
+
+        // determine if the selection references any columns not in the projection
+        val missing = columnNames - columnsInProjection
+        logger.info("** missing: $missing")
+
+        // if the selection only references outputs from the projection we can simply apply the filter expression
+        // to the DataFrame representing the projection
+        if (missing.size == 0) {
+            return df.select(projectionExpr)
+                .filter(filterExpr)
+        }
+
+        // because the selection references some columns that are not in the projection output we need to create an
+        // interim projection that has the additional columns and then we need to remove them after the selection
+        // has been applied
+        return df.select(projectionExpr + missing.map { Column(it) })
+            .filter(filterExpr)
+            .select(projectionExpr.map { Column(it.toField(df.logicalPlan()).name) })
+    }
+
+    private fun visit(expr: LogicalExpr, accumulator: MutableSet<String>) {
+        logger.info("visit() $expr, accumulator=$accumulator")
+        when (expr) {
+            is Column -> accumulator.add(expr.name)
+            is Alias -> visit(expr.expr, accumulator)
+            is BinaryExpr -> {
+                visit(expr.l, accumulator)
+                visit(expr.r, accumulator)
+            }
+        }
     }
 
     private fun createLogicalExpr(expr: SqlExpr, input: DataFrame) : LogicalExpr {

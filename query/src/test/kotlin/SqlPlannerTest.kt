@@ -32,9 +32,10 @@ class SqlPlannerTest {
         val df = ctx.sql("SELECT id FROM employee WHERE state = 'CO'")
 
         val expected =
-            "Selection: #state = 'CO'\n" +
-            "\tProjection: #id\n" +
-            "\t\tScan: src/test/data/employee.csv; projection=None\n"
+            "Projection: #id\n" +
+            "\tSelection: #state = 'CO'\n" +
+            "\t\tProjection: #id, #state\n" +
+            "\t\t\tScan: src/test/data/employee.csv; projection=None\n"
 
         assertEquals(expected, format(df.logicalPlan()))
     }
@@ -54,7 +55,6 @@ class SqlPlannerTest {
     }
 
     @Test
-    @Ignore
     fun `Selection referencing aliased expression`() {
 
         val ctx = createContext()
@@ -62,7 +62,7 @@ class SqlPlannerTest {
         val df = ctx.sql("SELECT salary AS annual_salary FROM employee WHERE annual_salary > 1000 AND state = 'CO")
 
         val expected =
-            "Projection: #annual_salary, #state\n" +
+            "Projection: #annual_salary\n" +
             "\tSelection: #annual_salary > 1000 AND #state = 'CO'\n" +
             "\t\tProjection: #salary as annual_salary, #state\n" +
             "\t\t\tScan: src/test/data/employee.csv; projection=None\n"

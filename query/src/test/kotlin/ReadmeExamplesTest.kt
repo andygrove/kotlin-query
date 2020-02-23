@@ -26,9 +26,10 @@ class ReadmeExamplesTest {
         val df = ctx.sql("SELECT id, first_name, last_name FROM employee WHERE state = 'CO'")
 
         val expected =
-            "Selection: #state = 'CO'\n" +
-            "\tProjection: #id, #first_name, #last_name\n" +
-            "\t\tScan: src/test/data/employee.csv; projection=None\n"
+            "Projection: #id, #first_name, #last_name\n" +
+            "\tSelection: #state = 'CO'\n" +
+            "\t\tProjection: #id, #first_name, #last_name, #state\n" +
+            "\t\t\tScan: src/test/data/employee.csv; projection=None\n"
 
         assertEquals(expected, format(df.logicalPlan()))
     }

@@ -189,7 +189,7 @@ infix fun LogicalExpr.mult(rhs: LogicalExpr): Mult {
 
 
 /** Aliased expression e.g. `expr AS alias`. */
-class Alias(private val expr: LogicalExpr, private val alias: String) : LogicalExpr {
+class Alias(val expr: LogicalExpr, val alias: String) : LogicalExpr {
     override fun toField(input: LogicalPlan): Field {
         return Field.nullablePrimitive(alias, expr.toField(input).type as ArrowType.PrimitiveType)
     }
