@@ -126,8 +126,17 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
                 SqlBinaryExpr(left, token.text, parse(precedence) ?: throw SQLException("Error parsing infix"))
             }
             is KeywordToken -> {
-                tokens.next() // consume the token
-                SqlAlias(left, parseIdentifier())
+                when (token.text) {
+                    "AS" -> {
+                        tokens.next() // consume the token
+                        SqlAlias(left, parseIdentifier())
+                    }
+                    "AND", "OR" -> {
+                        tokens.next() // consume the token
+                        SqlBinaryExpr(left, token.text, parse(precedence) ?: throw SQLException("Error parsing infix"))
+                    }
+                    else -> throw IllegalStateException("Unexpected infix token $token")
+                }
             }
             else -> throw IllegalStateException("Unexpected infix token $token")
         }

@@ -117,11 +117,11 @@ abstract class BinaryExpr(val name: String,
     }
 }
 
-/** Comparison expressions are binary expressions that return a boolean type */
-abstract class Comparison(name: String,
-                          op: String,
-                          l: LogicalExpr,
-                          r: LogicalExpr) : BinaryExpr(name, op, l, r) {
+/** Boolean expressions are binary expressions that return a boolean type */
+abstract class BooleanExpr(name: String,
+                           op: String,
+                           l: LogicalExpr,
+                           r: LogicalExpr) : BinaryExpr(name, op, l, r) {
 
     override fun toField(input: LogicalPlan): Field {
         return Field.nullablePrimitive(name, ArrowType.Bool())
@@ -129,23 +129,29 @@ abstract class Comparison(name: String,
 
 }
 
+/** Logical expression representing a logical AND */
+class And(l: LogicalExpr, r: LogicalExpr): BooleanExpr("and", "AND", l, r)
+
+/** Logical expression representing a logical AND */
+class Or(l: LogicalExpr, r: LogicalExpr): BooleanExpr("or", "OR", l, r)
+
 /** Logical expression representing an equality (`=`) comparison */
-class Eq(l: LogicalExpr, r: LogicalExpr): Comparison("eq", "=", l, r)
+class Eq(l: LogicalExpr, r: LogicalExpr): BooleanExpr("eq", "=", l, r)
 
 /** Logical expression representing an inequality (`!=`) comparison */
-class Neq(l: LogicalExpr, r: LogicalExpr): Comparison("neq", "!=", l, r)
+class Neq(l: LogicalExpr, r: LogicalExpr): BooleanExpr("neq", "!=", l, r)
 
 /** Logical expression representing a greater than (`>`) comparison */
-class Gt(l: LogicalExpr, r: LogicalExpr): Comparison("gt", ">", l, r)
+class Gt(l: LogicalExpr, r: LogicalExpr): BooleanExpr("gt", ">", l, r)
 
 /** Logical expression representing a greater than or equals (`>=`) comparison */
-class GtEq(l: LogicalExpr, r: LogicalExpr): Comparison("gteq", ">=", l, r)
+class GtEq(l: LogicalExpr, r: LogicalExpr): BooleanExpr("gteq", ">=", l, r)
 
 /** Logical expression representing a less than (`<`) comparison */
-class Lt(l: LogicalExpr, r: LogicalExpr): Comparison("lt", "<", l, r)
+class Lt(l: LogicalExpr, r: LogicalExpr): BooleanExpr("lt", "<", l, r)
 
 /** Logical expression representing a less than or equals (`<=`) comparison */
-class LtEq(l: LogicalExpr, r: LogicalExpr): Comparison("lteq", "<=", l, r)
+class LtEq(l: LogicalExpr, r: LogicalExpr): BooleanExpr("lteq", "<=", l, r)
 
 /** Convenience method to create an equality expression using an infix operator */
 infix fun LogicalExpr.eq(rhs: LogicalExpr): LogicalExpr { return Eq(this, rhs) }

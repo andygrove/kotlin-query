@@ -53,6 +53,23 @@ class SqlPlannerTest {
         assertEquals(expected, format(df.logicalPlan()))
     }
 
+    @Test
+    @Ignore
+    fun `Selection referencing aliased expression`() {
+
+        val ctx = createContext()
+
+        val df = ctx.sql("SELECT salary AS annual_salary FROM employee WHERE annual_salary > 1000 AND state = 'CO")
+
+        val expected =
+            "Projection: #annual_salary, #state\n" +
+            "\tSelection: #annual_salary > 1000 AND #state = 'CO'\n" +
+            "\t\tProjection: #salary as annual_salary, #state\n" +
+            "\t\t\tScan: src/test/data/employee.csv; projection=None\n"
+
+        assertEquals(expected, format(df.logicalPlan()))
+    }
+
     private fun createContext() : ExecutionContext {
         val ctx = ExecutionContext()
         ctx.register("employee", ctx.csv(employeeCsv))

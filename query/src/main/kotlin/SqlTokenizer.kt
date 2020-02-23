@@ -90,7 +90,7 @@ class SqlTokenizer(val sql: String) {
         }
 
         // EOF check
-        if (i == sql.length) {
+        if (i >= sql.length) {
             return null
         }
 
