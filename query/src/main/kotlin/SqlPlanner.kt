@@ -33,10 +33,15 @@ class SqlPlanner {
             is SqlIdentifier -> Column(expr.id)
             is SqlString -> LiteralString(expr.value)
             is SqlLong -> LiteralLong(expr.value)
+            is SqlDouble -> LiteralDouble(expr.value)
             is SqlBinaryExpr -> when(expr.op) {
                 "=" -> Eq(createLogicalExpr(expr.l, input), createLogicalExpr(expr.r, input))
-                else -> TODO(expr.javaClass.toString())
+                //TODO add other comparison operations
+                "*" -> Mult(createLogicalExpr(expr.l, input), createLogicalExpr(expr.r, input))
+                //TODO add other math operations
+                else -> TODO(expr.op.javaClass.toString())
             }
+            is SqlAlias -> Alias(createLogicalExpr(expr.expr, input), expr.alias.id)
             else -> TODO(expr.javaClass.toString())
         }
     }

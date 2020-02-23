@@ -44,13 +44,12 @@ class SqlParserTest {
     }
 
     @Test
-    @Ignore
     fun `projection with aliased binary expression`() {
         val select = parseSelect("SELECT salary * 0.1 AS bonus FROM employee")
         assertEquals("employee", select.tableName)
 
         val expectedBinaryExpr = SqlBinaryExpr(SqlIdentifier("salary"), "*", SqlDouble(0.1))
-        val expectedAliasedExpr = SqlAlias(expectedBinaryExpr, "bonus")
+        val expectedAliasedExpr = SqlAlias(expectedBinaryExpr, SqlIdentifier("bonus"))
         assertEquals(listOf(expectedAliasedExpr), select.projection)
     }
 
