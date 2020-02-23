@@ -31,7 +31,7 @@ data class SqlDouble(val value: Double) : SqlExpr {
 }
 
 /** SQL aliased expression */
-data class SqlAlias(val expr: SqlExpr, val alias: String) : SqlExpr
+data class SqlAlias(val expr: SqlExpr, val alias: SqlIdentifier) : SqlExpr
 
 //TODO: support other expression types
 
@@ -77,6 +77,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         val precedence = when (token) {
             is KeywordToken -> {
                 when (token.text) {
+                    "AS" -> 10
                     "OR" -> 20
                     "AND" -> 30
                     else -> 0
@@ -121,8 +122,12 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         val token = tokens.peek()
         val expr = when (token) {
             is OperatorToken -> {
-                tokens.next()
+                tokens.next() // consume the token
                 SqlBinaryExpr(left, token.text, parse(precedence) ?: throw SQLException("Error parsing infix"))
+            }
+            is KeywordToken -> {
+                tokens.next() // consume the token
+                SqlAlias(left, parseIdentifier())
             }
             else -> throw IllegalStateException("Unexpected infix token $token")
         }
@@ -164,5 +169,13 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
 
     private fun parseExpr() = parse(0)
 
+    /** Parse the next token as an identifier, throwing an exception if the next token is not an identifier. */
+    private fun parseIdentifier() : SqlIdentifier {
+        val expr = parseExpr() ?: throw SQLException("Expected identifier, found EOF")
+        return when (expr) {
+            is SqlIdentifier -> expr
+            else -> throw SQLException("Expected identifier, found $expr")
+        }
+    }
 
 }
