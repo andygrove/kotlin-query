@@ -6,19 +6,6 @@ import org.apache.arrow.vector.types.pojo.Field
 import java.sql.SQLException
 
 /**
- * Logical Expression for use in logical query plans. The logical expression provides information needed
- * during the planning phase such as the name and data type of the expression.
- */
-interface LogicalExpr {
-
-    /**
-     * Return meta-data about the value that will be produced by this expression when evaluated against
-     * a particular input.
-     */
-    fun toField(input: LogicalPlan): Field
-}
-
-/**
  * Logical expression representing a reference to a column by name.
  */
 class Column(val name: String): LogicalExpr {
@@ -216,15 +203,58 @@ interface AggregateExpr {
     fun toField(input: LogicalPlan): Field
 }
 
-/**
- * Logical expression representing the SUM aggregate expression.
- */
-class Sum(val e: LogicalExpr) : AggregateExpr {
+/** Base class for aggregate functions that are of the same type as the underlying expression */
+abstract class BaseAggregateExpr(val name: String, val e: LogicalExpr) : AggregateExpr {
+
     override fun toField(input: LogicalPlan): Field {
-        return Field.nullable("sum", e.toField(input).type)
+        return Field.nullable(name, e.toField(input).type)
     }
 
     override fun toString(): String {
-        return "SUM($e)"
+        return "$name($e)"
+    }
+}
+
+/**
+ * Logical expression representing the SUM aggregate expression.
+ */
+class Sum(e: LogicalExpr) : BaseAggregateExpr("SUM", e)
+
+/**
+ * Logical expression representing the MIN aggregate expression.
+ */
+class Min(e: LogicalExpr) : BaseAggregateExpr("MIN", e)
+
+/**
+ * Logical expression representing the MAX aggregate expression.
+ */
+class Max(e: LogicalExpr) : BaseAggregateExpr("MAX", e)
+
+/**
+ * Logical expression representing the AVG aggregate expression.
+ */
+class Avg(e: LogicalExpr) : BaseAggregateExpr("AVG", e)
+
+/** Logical expression representing the COUNT aggregate expression. */
+class Count(val e: LogicalExpr) : AggregateExpr {
+
+    override fun toField(input: LogicalPlan): Field {
+        return Field.nullable("COUNT", ArrowType.Int(32, false))
+    }
+
+    override fun toString(): String {
+        return "COUNT($e)"
+    }
+}
+
+/** Logical expression representing the COUNT DISTINCT aggregate expression. */
+class CountDistinct(val e: LogicalExpr) : AggregateExpr {
+
+    override fun toField(input: LogicalPlan): Field {
+        return Field.nullable("COUNT_DISTINCT", ArrowType.Int(32, false))
+    }
+
+    override fun toString(): String {
+        return "COUNT(DISTINCT $e)"
     }
 }

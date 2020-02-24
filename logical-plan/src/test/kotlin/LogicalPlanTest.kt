@@ -4,6 +4,7 @@ import io.andygrove.kquery.datasource.CsvDataSource
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.File
+import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LogicalPlanTest {
@@ -24,8 +25,11 @@ class LogicalPlanTest {
         // create a plan to represent the projection (SELECT)
         val projectionList = listOf(col("id"), col("first_name"), col("last_name"))
         val plan = Projection(selection, projectionList)
-        // print the plan
-        println(format(plan))
+
+        assertEquals(
+                "Projection: #id, #first_name, #last_name\n" +
+                "\tSelection: #state = 'CO'\n" +
+                "\t\tScan: employee; projection=None\n", format(plan))
     }
 
     @Test
@@ -37,6 +41,28 @@ class LogicalPlanTest {
                 ),
                 listOf(col("id"), col("first_name"), col("last_name"))
         )
-        println(format(plan))
+
+        assertEquals(
+                "Projection: #id, #first_name, #last_name\n" +
+                "\tSelection: #state = 'CO'\n" +
+                "\t\tScan: employee; projection=None\n", format(plan))
+    }
+
+    @Test
+    fun `build aggregate plan`() {
+        // create a plan to represent the data source
+        val csv = CsvDataSource(employeeCsv, 10)
+
+        // create a plan to represent the scan of the data source (FROM)
+        val scan = Scan("employee", csv, listOf())
+
+        val groupExpr = listOf(col("state"))
+        val aggregateExpr = listOf(Min(col("salary")), Max(col("salary")), Count(col("salary")))
+        val plan = Aggregate(scan, groupExpr, aggregateExpr)
+
+        assertEquals(
+                "Aggregate: groupExpr=[#state], aggregateExpr=[MIN(#salary), MAX(#salary), COUNT(#salary)]\n" +
+                "\tScan: employee; projection=None\n", format(plan))
+
     }
 }

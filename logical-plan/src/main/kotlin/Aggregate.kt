@@ -15,6 +15,6 @@ class Aggregate(val input: LogicalPlan, val groupExpr: List<LogicalExpr>, val ag
     }
 
     override fun toString(): String {
-        return super.toString()
+        return "Aggregate: groupExpr=$groupExpr, aggregateExpr=$aggregateExpr"
     }
 }
