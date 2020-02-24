@@ -9,14 +9,10 @@ import kotlin.test.assertEquals
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DataFrameTest {
 
-    val employeeCsv = "../testdata/employee.csv"
-
     @Test
     fun `build DataFrame`() {
 
-        val csv = DataFrameImpl(Scan("employee", CsvDataSource(employeeCsv, 1024), listOf()))
-
-        val df = csv
+        val df = csv()
                 .filter(col("state") eq lit("CO"))
                 .select(listOf(col("id"), col("first_name"), col("last_name")))
 
@@ -31,9 +27,7 @@ class DataFrameTest {
     @Test
     fun `multiplier and alias`() {
 
-        val csv = DataFrameImpl(Scan("employee", CsvDataSource(employeeCsv, 1024), listOf()))
-
-        val df = csv
+        val df = csv()
                 .filter(col("state") eq lit("CO"))
                 .select(listOf(
                         col("id"),
@@ -57,13 +51,16 @@ class DataFrameTest {
     @Test
     fun `aggregate query`() {
 
-        val csv = DataFrameImpl(Scan("employee", CsvDataSource(employeeCsv, 1024), listOf()))
-
-        val df = csv
+        val df = csv()
                 .aggregate(listOf(col("state")), listOf(Min(col("salary")), Max(col("salary")), Count(col("salary"))))
 
         assertEquals(
                 "Aggregate: groupExpr=[#state], aggregateExpr=[MIN(#salary), MAX(#salary), COUNT(#salary)]\n" +
                         "\tScan: employee; projection=None\n", format(df.logicalPlan()))
+    }
+
+    private fun csv() : DataFrame {
+        val employeeCsv = "../testdata/employee.csv"
+        return DataFrameImpl(Scan("employee", CsvDataSource(employeeCsv, 1024), listOf()))
     }
 }

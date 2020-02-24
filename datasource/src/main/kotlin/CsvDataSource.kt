@@ -60,7 +60,7 @@ class CsvDataSource(filename: String, private val batchSize: Int) : DataSource {
             field.value.valueCount = rows.size
         }
 
-        val batch = RecordBatch(schema, root)
+        val batch = RecordBatch(schema, root.fieldVectors.map { ArrowFieldVector(it) })
 
         logger.info("Created batch:\n${batch.toCSV()}")
 

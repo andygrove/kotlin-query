@@ -84,7 +84,7 @@ class ParquetIterator(private val reader: ParquetFileReader, private val project
         root.allocateNew()
         root.rowCount = rows
 
-        batch = RecordBatch(projectedArrowSchema, root)
+        batch = RecordBatch(projectedArrowSchema, root.fieldVectors.map { ArrowFieldVector(it) })
 
         //TODO we really want to read directly as columns not rows
         val columnIO = ColumnIOFactory().getColumnIO(schema)

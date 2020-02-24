@@ -15,7 +15,7 @@ class ProjectionExec(val input: PhysicalPlan, val schema: Schema, val expr: List
             println("projection input:\n${batch.toCSV()}")
 
             val fieldVectors = expr.map { it.evaluate(batch) }
-            val projectedBatch = RecordBatch(schema, VectorSchemaRoot(fieldVectors))
+            val projectedBatch = RecordBatch(schema, fieldVectors)
 
             println("projection output:\n${projectedBatch.toCSV()}")
 

@@ -1,5 +1,8 @@
 package io.andygrove.kquery.physical
 
+import io.andygrove.kquery.datasource.ArrowFieldVector
+import io.andygrove.kquery.datasource.ArrowVectorBuilder
+import io.andygrove.kquery.datasource.ColumnVector
 import io.andygrove.kquery.datasource.RecordBatch
 import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.BitVector
@@ -17,38 +20,39 @@ class SelectionExec(val input: PhysicalPlan, val expr: PhysicalExpr) : PhysicalP
 
             println("selection input:\n${batch.toCSV()}")
 
-            val result = expr.evaluate(batch) as BitVector
+            val result = (expr.evaluate(batch) as ArrowFieldVector).field as BitVector
+
             val schema = batch.schema
             val columnCount = batch.schema.fields.size
-            val rowCount = batch.field(0).valueCount
             val filteredFields = (0 until columnCount).map { filter(batch.field(it), result) }
-            val filteredBatch = VectorSchemaRoot(schema, filteredFields.toList(), rowCount)
-            val batch = RecordBatch(schema, filteredBatch)
+            val filteredBatch = RecordBatch(schema, filteredFields.map { ArrowFieldVector(it) })
 
-            println("selection output:\n${batch.toCSV()}")
+            println("selection output:\n${filteredBatch.toCSV()}")
 
-            batch
+            filteredBatch
         }
     }
 
-    private fun filter(v: FieldVector, selection: BitVector) : FieldVector {
-        return when (v) {
-            is VarCharVector -> {
-                val size = v.valueCount
-                val filteredVector = VarCharVector("v", RootAllocator(Long.MAX_VALUE))
-                filteredVector.allocateNew()
-                var count = 0
-                (0 until size)
-                        .forEach {
-                            if (selection.get(it) == 1) {
-                                filteredVector.set(count, v.get(it))
-                                count++
-                            }
-                        }
-                filteredVector.valueCount = count
-                filteredVector
-            }
-            else -> TODO()
-        }
+    private fun filter(v: ColumnVector, selection: BitVector) : FieldVector {
+        println("filter() selection BitVector length = ${selection.valueCount}")
+        val filteredVector = VarCharVector("v", RootAllocator(Long.MAX_VALUE))
+        filteredVector.allocateNew()
+
+        val builder = ArrowVectorBuilder(filteredVector)
+
+        var count = 0
+        (0 until selection.valueCount)
+                .forEach {
+                    if (selection.get(it) == 1) {
+                        println("match")
+                        builder.set(count, v.getValue(it))
+                        count++
+                    } else {
+                        println("no match")
+                    }
+                }
+        filteredVector.valueCount = count
+
+        return filteredVector
     }
 }

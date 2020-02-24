@@ -38,15 +38,11 @@ class ParquetDataSourceTest {
 
         val batch = it.next()
         assertEquals(1, batch.schema.fields.size)
-        assertEquals(8, batch.field(0).valueCount)
+        assertEquals(8, batch.field(0).size())
 
-        val id = batch.field(0) as IntVector
-        val values = (0..id.valueCount).map {
-            if (id.isNull(it)) {
-                "null"
-            } else {
-                id.get(it).toString()
-            }
+        val id = batch.field(0)
+        val values = (0..id.size()).map {
+            id.getValue(it) ?: "null"
         }
         assertEquals("4,5,6,7,2,3,0,1,null", values.joinToString(","))
 
