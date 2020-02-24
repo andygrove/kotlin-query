@@ -92,6 +92,18 @@ class LiteralDouble(val n: Double): LogicalExpr {
 /** Convenience method to create a LiteralDouble */
 fun lit(value: Double) = LiteralDouble(value)
 
+class CastExpr(val expr: LogicalExpr, val dataType: ArrowType.PrimitiveType) : LogicalExpr {
+    override fun toField(input: LogicalPlan): Field {
+        return Field.nullablePrimitive(expr.toField(input).name, dataType)
+    }
+
+    override fun toString(): String {
+        return "CAST($expr AS $dataType)"
+    }
+}
+
+fun cast(expr: LogicalExpr, dataType: ArrowType.PrimitiveType) = CastExpr(expr, dataType)
+
 abstract class BinaryExpr(val name: String,
                           val op: String,
                           val l: LogicalExpr,

@@ -1,6 +1,7 @@
 package io.andygrove.kquery.logical
 
 import io.andygrove.kquery.datasource.CsvDataSource
+import org.apache.arrow.vector.types.pojo.ArrowType
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.File
@@ -57,12 +58,12 @@ class LogicalPlanTest {
         val scan = Scan("employee", csv, listOf())
 
         val groupExpr = listOf(col("state"))
-        val aggregateExpr = listOf(Min(col("salary")), Max(col("salary")), Count(col("salary")))
+        val aggregateExpr = listOf(Max(cast(col("salary"), ArrowType.Int(32, true))))
         val plan = Aggregate(scan, groupExpr, aggregateExpr)
 
         assertEquals(
-                "Aggregate: groupExpr=[#state], aggregateExpr=[MIN(#salary), MAX(#salary), COUNT(#salary)]\n" +
-                "\tScan: employee; projection=None\n", format(plan))
+                "Aggregate: groupExpr=[#state], aggregateExpr=[MAX(CAST(#salary AS Int(32, true)))]\n" +
+                        "\tScan: employee; projection=None\n", format(plan))
 
     }
 }
