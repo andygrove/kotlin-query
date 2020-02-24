@@ -1,4 +1,4 @@
-package io.andygrove.kquery
+package io.andygrove.kquery.execution
 
 import io.andygrove.kquery.logical.*
 import io.andygrove.kquery.sql.*
