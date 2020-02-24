@@ -1,4 +1,4 @@
-package io.andygrove.kquery.execution
+package io.andygrove.kquery.physical
 
 import io.andygrove.kquery.datasource.RecordBatch
 import org.apache.arrow.vector.VectorSchemaRoot

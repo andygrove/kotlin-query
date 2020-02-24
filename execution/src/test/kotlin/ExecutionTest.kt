@@ -3,6 +3,7 @@ package io.andygrove.kquery.execution
 import io.andygrove.kquery.logical.col
 import io.andygrove.kquery.logical.eq
 import io.andygrove.kquery.logical.lit
+import io.andygrove.kquery.physical.*
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.File

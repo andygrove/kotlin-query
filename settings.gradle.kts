@@ -9,5 +9,6 @@
 
 rootProject.name = "kotlin-query"
 
-include("datasource", "logical-plan", "sql", "physical-plan")
+include("datasource", "logical-plan", "physical-plan", "sql", "execution")
+
 

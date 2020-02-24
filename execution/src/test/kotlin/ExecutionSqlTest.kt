@@ -1,6 +1,7 @@
 package io.andygrove.kquery.execution
 
 import io.andygrove.kquery.logical.format
+import io.andygrove.kquery.physical.*
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
