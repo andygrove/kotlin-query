@@ -14,7 +14,7 @@ val df: DataFrame = ctx.csv("src/test/data/employee.csv")
     .select(listOf(col("id"), col("first_name"), col("last_name")))
 
 // Execute the query
-val result = df.collect()
+val result = ctx.execute(df)
 ```
 
 This example results in the following logical query plan:
@@ -39,7 +39,7 @@ ctx.register("employee", csv)
 
 // Execute a SQL query 
 val df: DataFrame = ctx.sql("SELECT id, first_name, last_name FROM employee WHERE state = 'CO'")
-val result = df.collect()
+val result = ctx.execute(df)
 ```
 
 This example results in the following logical query plan:

@@ -1,0 +1,14 @@
+ digraph kquery {
+
+     "logical-plan" -> datasource;
+
+     sql -> "logical-plan";
+
+     "physical-plan" -> datasource;
+     "physical-plan" -> "logical-plan";
+
+     execution -> datasource;
+     execution -> "logical-plan";
+     execution -> "physical-plan";
+     execution -> sql;
+ }
