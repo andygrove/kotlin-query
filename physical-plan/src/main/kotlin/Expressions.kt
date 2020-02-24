@@ -3,6 +3,7 @@ package io.andygrove.kquery.physical
 import io.andygrove.kquery.datasource.*
 import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.*
+import org.apache.arrow.vector.types.pojo.ArrowType
 import java.util.*
 
 /**
@@ -22,6 +23,34 @@ class ColumnPExpr(val i: Int) : PhysicalExpr {
     }
 }
 
+class CastPExpr(val expr: PhysicalExpr, val dataType: ArrowType.PrimitiveType) : PhysicalExpr {
+    override fun evaluate(input: RecordBatch): ColumnVector {
+        val value = expr.evaluate(input)
+        return when (dataType) {
+            is ArrowType.Int -> {
+                //TODO move this logic to separate source file
+                val v = IntVector("v", RootAllocator(Long.MAX_VALUE))
+                v.allocateNew()
+
+                val builder = ArrowVectorBuilder(v)
+                (0 until value.size()).forEach {
+                    val vv = value.getValue(it)
+                    if (vv == null) {
+                        builder.set(it, null)
+                    } else {
+                        when (vv) {
+                            is ByteArray -> builder.set(it, String(vv).toInt())
+                            else -> TODO()
+                        }
+                    }
+                }
+                v.valueCount = value.size()
+                ArrowFieldVector(v)
+            }
+            else -> TODO()
+        }
+    }
+}
 
 abstract class ComparisonPExpr(val l: PhysicalExpr, val r: PhysicalExpr) : PhysicalExpr {
     override fun evaluate(input: RecordBatch): ColumnVector {
@@ -156,7 +185,15 @@ class MaxAccumulator : Accumulator {
     var value: Any? = null
 
     override fun accumulate(value: Any?) {
+        //TODO this is hard coded for Int
         println("Max accumulate $value")
+        if (value != null) {
+            if (this.value == null) {
+                this.value = value
+            } else if (value as Int > this.value as Int) {
+                this.value = value
+            }
+        }
     }
 
     override fun finalValue(): Any? {

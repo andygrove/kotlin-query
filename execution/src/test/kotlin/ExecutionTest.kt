@@ -1,10 +1,8 @@
 package io.andygrove.kquery.execution
 
-import io.andygrove.kquery.logical.Max
-import io.andygrove.kquery.logical.col
-import io.andygrove.kquery.logical.eq
-import io.andygrove.kquery.logical.lit
+import io.andygrove.kquery.logical.*
 import io.andygrove.kquery.physical.*
+import org.apache.arrow.vector.types.pojo.ArrowType
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
@@ -57,22 +55,21 @@ class ExecutionTest {
     }
 
     @Test
-    @Ignore
     fun `aggregate query`() {
         // Create a context
         val ctx = ExecutionContext()
 
         // construct a query using the DataFrame API
         val df = ctx.csv(employeeCsv)
-            .aggregate(listOf(col("state")), listOf(Max(col("salary"))))
+            .aggregate(listOf(col("state")), listOf(Max(cast(col("salary"), ArrowType.Int(32, true)))))
 
         val batches = ctx.execute(df).asSequence().toList()
         assertEquals(1, batches.size)
 
         val batch = batches.first()
         val expected =
-                "CO,12000\n" +
-                "CA,12343\n"
+                "CO,11500\n" +
+                "CA,12000\n"
         assertEquals(expected
                 , batch.toCSV())
     }

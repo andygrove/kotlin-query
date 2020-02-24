@@ -59,6 +59,17 @@ class ArrowVectorBuilder(val fieldVector: FieldVector) {
                     fieldVector.set(i, value.toString().toByteArray())
                 }
             }
+            is IntVector -> {
+                if (value == null) {
+                    fieldVector.setNull(i)
+                } else if (value is Number) {
+                    fieldVector.set(i, value.toInt())
+                } else if (value is String) {
+                    fieldVector.set(i, value.toInt())
+                } else {
+                    TODO()
+                }
+            }
             else -> TODO()
         }
     }

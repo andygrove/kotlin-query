@@ -64,13 +64,14 @@ class QueryPlanner {
             }
             ColumnPExpr(i)
         }
+        is CastExpr -> CastPExpr(createPhysicalExpr(expr.expr, input), expr.dataType)
         is Eq -> EqExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
         //TODO other comparison ops
         is Mult -> MultExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
         //TODO other math ops
         //TODO boolean ops
         //is And -> AndExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
-        else -> throw IllegalStateException(expr.javaClass.toString())
+        else -> TODO(expr.javaClass.toString())
     }
 
 }

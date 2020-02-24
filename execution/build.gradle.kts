@@ -8,4 +8,6 @@ dependencies {
     implementation(project(":logical-plan"))
     implementation(project(":physical-plan"))
     implementation(project(":sql"))
+
+    implementation("org.apache.arrow:arrow-vector:0.16.0")
 }
