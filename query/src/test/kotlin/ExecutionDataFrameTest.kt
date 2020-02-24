@@ -2,13 +2,12 @@ package io.andygrove.kquery
 
 import io.andygrove.kquery.logical.*
 
-import java.io.File
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class DataFrameTest {
+class ExecutionDataFrameTest {
 
     val employeeCsv = "../testdata/employee.csv"
 

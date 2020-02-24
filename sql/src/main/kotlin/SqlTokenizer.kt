@@ -1,4 +1,4 @@
-package io.andygrove.kquery
+package io.andygrove.kquery.sql
 
 import java.util.logging.Logger
 

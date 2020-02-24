@@ -24,7 +24,7 @@ class ExecutionTest {
                 .filter(col("state") eq lit("CO"))
                 .select(listOf(col("id"), col("first_name"), col("last_name")))
 
-        val batches = df.collect().asSequence().toList()
+        val batches = ctx.execute(df).asSequence().toList()
         assertEquals(1, batches.size)
 
         val batch = batches.first()
@@ -44,7 +44,7 @@ class ExecutionTest {
         // Construct a query using the DataFrame API
         val df = ctx.sql("SELECT id, first_name, last_name FROM employee WHERE state = 'CA'")
 
-        val batches = df.collect().asSequence().toList()
+        val batches = ctx.execute(df).asSequence().toList()
         assertEquals(1, batches.size)
 
         val batch = batches.first()
@@ -69,7 +69,7 @@ class ExecutionTest {
         val df = ctx.sql("SELECT id, first_name, last_name, salary FROM ca_employees")
         //val df = ctx.sql("SELECT id, first_name, last_name, salary * 0.1 AS bonus FROM ca_employees")
 
-        val batches = df.collect().asSequence().toList()
+        val batches = ctx.execute(df).asSequence().toList()
         assertEquals(1, batches.size)
 
         val batch = batches.first()

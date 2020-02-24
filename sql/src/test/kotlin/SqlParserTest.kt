@@ -1,6 +1,5 @@
-package io.andygrove.kquery
+package io.andygrove.kquery.sql
 
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
