@@ -6,7 +6,7 @@ import io.andygrove.kquery.logical.DataFrame
 import io.andygrove.kquery.logical.DataFrameImpl
 import io.andygrove.kquery.logical.LogicalPlan
 import io.andygrove.kquery.logical.Scan
-import io.andygrove.kquery.physical.*
+import io.andygrove.kquery.physical.QueryPlanner
 import io.andygrove.kquery.sql.SqlParser
 import io.andygrove.kquery.sql.SqlPlanner
 import io.andygrove.kquery.sql.SqlSelect
@@ -36,12 +36,15 @@ class ExecutionContext {
         tables[tablename] = df
     }
 
-    fun execute(plan: LogicalPlan) : Iterable<RecordBatch> {
+    /** Execute the logical plan represented by a DataFrame */
+    fun execute(df: DataFrame) : Iterable<RecordBatch> {
+        return execute(df.logicalPlan())
+    }
+
+    /** Execute the provided logical plan */
+    private fun execute(plan: LogicalPlan) : Iterable<RecordBatch> {
         val physicalPlan = QueryPlanner().createPhysicalPlan(plan)
         return physicalPlan.execute()
     }
 
-    fun execute(df: DataFrame) : Iterable<RecordBatch> {
-        return execute(df.logicalPlan())
-    }
 }
