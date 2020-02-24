@@ -2,6 +2,11 @@ package io.andygrove.kquery
 
 import io.andygrove.kquery.datasource.CsvDataSource
 import io.andygrove.kquery.datasource.RecordBatch
+import io.andygrove.kquery.logical.LogicalPlan
+import io.andygrove.kquery.logical.LogicalExpr
+import io.andygrove.kquery.logical.Scan
+import io.andygrove.kquery.logical.Projection
+import io.andygrove.kquery.logical.Selection
 
 interface DataFrame {
 

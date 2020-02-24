@@ -1,5 +1,8 @@
 package io.andygrove.kquery
 
+import io.andygrove.kquery.logical.*
+
+import java.io.File
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
@@ -7,7 +10,7 @@ import kotlin.test.assertEquals
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class DataFrameTest {
 
-    val employeeCsv = "src/test/data/employee.csv"
+    val employeeCsv = "../testdata/employee.csv"
 
     @Test
     fun `build DataFrame`() {
@@ -21,7 +24,7 @@ class DataFrameTest {
         val expected =
                 "Projection: #id, #first_name, #last_name\n" +
                 "\tSelection: #state = 'CO'\n" +
-                "\t\tScan: src/test/data/employee.csv; projection=None\n"
+                "\t\tScan: ../testdata/employee.csv; projection=None\n"
 
         assertEquals(expected, format(df.logicalPlan()))
     }
@@ -45,7 +48,7 @@ class DataFrameTest {
                 "Selection: #bonus > 1000\n" +
                 "\tProjection: #id, #first_name, #last_name, #salary, #salary * 0.1 as bonus\n" +
                 "\t\tSelection: #state = 'CO'\n" +
-                "\t\t\tScan: src/test/data/employee.csv; projection=None\n"
+                "\t\t\tScan: ../testdata/employee.csv; projection=None\n"
 
         val actual = format(df.logicalPlan())
 

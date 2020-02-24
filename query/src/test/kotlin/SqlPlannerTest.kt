@@ -1,6 +1,7 @@
 package io.andygrove.kquery
 
-import org.junit.Ignore
+import io.andygrove.kquery.logical.*
+
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
@@ -8,7 +9,7 @@ import kotlin.test.assertEquals
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SqlPlannerTest {
 
-    val employeeCsv = "src/test/data/employee.csv"
+    val employeeCsv = "../testdata/employee.csv"
 
     @Test
     fun `simple SELECT`() {
@@ -19,7 +20,7 @@ class SqlPlannerTest {
 
         val expected =
             "Projection: #id\n" +
-            "\tScan: src/test/data/employee.csv; projection=None\n"
+            "\tScan: ../testdata/employee.csv; projection=None\n"
 
         assertEquals(expected, format(df.logicalPlan()))
     }
@@ -35,7 +36,7 @@ class SqlPlannerTest {
             "Projection: #id\n" +
             "\tSelection: #state = 'CO'\n" +
             "\t\tProjection: #id, #state\n" +
-            "\t\t\tScan: src/test/data/employee.csv; projection=None\n"
+            "\t\t\tScan: ../testdata/employee.csv; projection=None\n"
 
         assertEquals(expected, format(df.logicalPlan()))
     }
@@ -49,7 +50,7 @@ class SqlPlannerTest {
 
         val expected =
                 "Projection: #salary * 0.1 as bonus\n" +
-                "\tScan: src/test/data/employee.csv; projection=None\n"
+                "\tScan: ../testdata/employee.csv; projection=None\n"
 
         assertEquals(expected, format(df.logicalPlan()))
     }
@@ -65,7 +66,7 @@ class SqlPlannerTest {
             "Projection: #annual_salary\n" +
             "\tSelection: #annual_salary > 1000 AND #state = 'CO'\n" +
             "\t\tProjection: #salary as annual_salary, #state\n" +
-            "\t\t\tScan: src/test/data/employee.csv; projection=None\n"
+            "\t\t\tScan: ../testdata/employee.csv; projection=None\n"
 
         assertEquals(expected, format(df.logicalPlan()))
     }

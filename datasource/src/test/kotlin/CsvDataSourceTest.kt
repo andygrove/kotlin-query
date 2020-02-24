@@ -1,6 +1,5 @@
-package io.andygrove.kquery
+package io.andygrove.kquery.datasource
 
-import io.andygrove.kquery.datasource.CsvDataSource
 import org.apache.arrow.vector.VarCharVector
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
@@ -9,7 +8,7 @@ import java.io.File
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CsvDataSourceTest {
 
-    val dir = "src/test/data"
+    val dir = "../testdata"
 
     @Test
     fun `read csv`() {

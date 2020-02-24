@@ -1,5 +1,7 @@
 package io.andygrove.kquery
 
+import io.andygrove.kquery.logical.*
+
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.File
@@ -8,7 +10,9 @@ import kotlin.test.assertEquals
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ExecutionTest {
 
-    val dir = "src/test/data"
+    val dir = "../testdata"
+
+    val employeeCsv = File(dir, "employee.csv").absolutePath
 
     @Test
     fun `employees in CO using DataFrame`() {
@@ -16,7 +20,7 @@ class ExecutionTest {
         val ctx = ExecutionContext()
 
         // Construct a query using the DataFrame API
-        val df = ctx.csv(File(dir, "employee.csv").absolutePath)
+        val df = ctx.csv(employeeCsv)
                 .filter(col("state") eq lit("CO"))
                 .select(listOf(col("id"), col("first_name"), col("last_name")))
 
@@ -34,7 +38,7 @@ class ExecutionTest {
         // Create a context
         val ctx = ExecutionContext()
 
-        val employee = ctx.csv(File(dir, "employee.csv").absolutePath)
+        val employee = ctx.csv(employeeCsv)
         ctx.register("employee", employee)
 
         // Construct a query using the DataFrame API
@@ -54,7 +58,7 @@ class ExecutionTest {
         val ctx = ExecutionContext()
 
         // construct a query using the DataFrame API
-        val caEmployees = ctx.csv(File(dir, "employee.csv").absolutePath)
+        val caEmployees = ctx.csv(employeeCsv)
                 .filter(col("state") eq lit("CA"))
                 .select(listOf(col("id"), col("first_name"), col("last_name"), col("salary")))
 

@@ -1,5 +1,7 @@
 package io.andygrove.kquery
 
+import io.andygrove.kquery.logical.*
+
 import java.sql.SQLException
 import java.util.logging.Logger
 

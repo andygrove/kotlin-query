@@ -1,6 +1,5 @@
-package io.andygrove.kquery
+package io.andygrove.kquery.datasource
 
-import io.andygrove.kquery.datasource.ParquetDataSource
 import org.apache.arrow.vector.IntVector
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
@@ -12,7 +11,7 @@ import kotlin.test.assertTrue
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ParquetDataSourceTest {
 
-    val dir = "src/test/data/"
+    val dir = "../testdata"
 
     @Test
     fun `read parquet schema`() {

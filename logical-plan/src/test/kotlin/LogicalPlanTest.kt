@@ -1,13 +1,17 @@
-package io.andygrove.kquery
+package io.andygrove.kquery.logical
 
 import io.andygrove.kquery.datasource.CsvDataSource
+
+import java.io.File
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LogicalPlanTest {
 
-    val employeeCsv = "src/test/data/employee.csv"
+    val dir = "../testdata"
+
+    val employeeCsv = File(dir, "employee.csv").absolutePath
 
     @Test
     fun `build logicalPlan manually`() {

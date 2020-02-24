@@ -1,4 +1,4 @@
-package io.andygrove.kquery
+package io.andygrove.kquery.logical
 
 import io.andygrove.kquery.datasource.DataSource
 import org.apache.arrow.vector.types.FloatingPointPrecision
