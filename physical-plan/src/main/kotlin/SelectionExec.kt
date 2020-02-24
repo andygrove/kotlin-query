@@ -1,11 +1,11 @@
 package io.andygrove.kquery.execution
 
-import io.andygrove.kquery.datasource.DataSource
 import io.andygrove.kquery.datasource.RecordBatch
 import org.apache.arrow.memory.RootAllocator
-import org.apache.arrow.vector.*
-import org.apache.arrow.vector.types.pojo.Schema
-import java.util.*
+import org.apache.arrow.vector.BitVector
+import org.apache.arrow.vector.FieldVector
+import org.apache.arrow.vector.VarCharVector
+import org.apache.arrow.vector.VectorSchemaRoot
 
 /**
  * Execute a selection.

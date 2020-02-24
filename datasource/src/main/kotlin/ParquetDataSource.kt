@@ -14,7 +14,6 @@ import org.apache.parquet.hadoop.util.HadoopInputFile
 import org.apache.parquet.io.ColumnIOFactory
 import org.apache.parquet.io.RecordReader
 import org.apache.parquet.schema.PrimitiveType
-import java.lang.IllegalStateException
 
 class ParquetDataSource(private val filename: String) : DataSource {
 

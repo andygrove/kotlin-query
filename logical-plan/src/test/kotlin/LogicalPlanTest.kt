@@ -1,10 +1,9 @@
 package io.andygrove.kquery.logical
 
 import io.andygrove.kquery.datasource.CsvDataSource
-
-import java.io.File
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
+import java.io.File
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class LogicalPlanTest {

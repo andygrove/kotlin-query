@@ -6,7 +6,10 @@ import io.andygrove.kquery.logical.DataFrame
 import io.andygrove.kquery.logical.DataFrameImpl
 import io.andygrove.kquery.logical.LogicalPlan
 import io.andygrove.kquery.logical.Scan
-import io.andygrove.kquery.sql.*
+import io.andygrove.kquery.sql.SqlParser
+import io.andygrove.kquery.sql.SqlPlanner
+import io.andygrove.kquery.sql.SqlSelect
+import io.andygrove.kquery.sql.SqlTokenizer
 
 /** Execution context */
 class ExecutionContext {

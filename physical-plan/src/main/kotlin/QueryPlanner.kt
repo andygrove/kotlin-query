@@ -1,19 +1,6 @@
 package io.andygrove.kquery.execution
 
-import io.andygrove.kquery.logical.LogicalPlan
-import io.andygrove.kquery.logical.LogicalExpr
-import io.andygrove.kquery.logical.Scan
-import io.andygrove.kquery.logical.Projection
-import io.andygrove.kquery.logical.Selection
-import io.andygrove.kquery.logical.LiteralLong
-import io.andygrove.kquery.logical.LiteralDouble
-import io.andygrove.kquery.logical.LiteralString
-import io.andygrove.kquery.logical.Alias
-import io.andygrove.kquery.logical.Column
-import io.andygrove.kquery.logical.ColumnIndex
-import io.andygrove.kquery.logical.Eq
-import io.andygrove.kquery.logical.Mult
-
+import io.andygrove.kquery.logical.*
 import java.sql.SQLException
 
 /**
