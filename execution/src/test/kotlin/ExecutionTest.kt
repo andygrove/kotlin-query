@@ -1,9 +1,11 @@
 package io.andygrove.kquery.execution
 
+import io.andygrove.kquery.logical.Max
 import io.andygrove.kquery.logical.col
 import io.andygrove.kquery.logical.eq
 import io.andygrove.kquery.logical.lit
 import io.andygrove.kquery.physical.*
+import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.File
@@ -51,6 +53,27 @@ class ExecutionTest {
 
         val batch = batches.first()
         assertEquals("1,Bill,Hopkins\n"
+                , batch.toCSV())
+    }
+
+    @Test
+    @Ignore
+    fun `aggregate query`() {
+        // Create a context
+        val ctx = ExecutionContext()
+
+        // construct a query using the DataFrame API
+        val df = ctx.csv(employeeCsv)
+            .aggregate(listOf(col("state")), listOf(Max(col("salary"))))
+
+        val batches = ctx.execute(df).asSequence().toList()
+        assertEquals(1, batches.size)
+
+        val batch = batches.first()
+        val expected =
+                "CO,12000\n" +
+                "CA,12343\n"
+        assertEquals(expected
                 , batch.toCSV())
     }
 

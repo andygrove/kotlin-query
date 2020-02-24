@@ -123,3 +123,63 @@ class LiteralStringPExpr(val value: String) : PhysicalExpr {
         return LiteralValueVector(value.toByteArray(), input.rowCount())
     }
 }
+
+interface PhysicalAggregateExpr {
+    fun inputExpression(): PhysicalExpr
+    fun createAccumulator(): Accumulator
+}
+
+class MaxPExpr(private val expr: PhysicalExpr) : PhysicalAggregateExpr {
+
+    override fun inputExpression(): PhysicalExpr {
+        return expr
+    }
+
+    override fun createAccumulator(): Accumulator {
+        return MaxAccumulator()
+    }
+}
+
+
+interface Accumulator {
+    fun accumulate(value: Any?)
+    fun finalValue(): Any?
+}
+
+//class MinAccumulator : Accumulator {
+//    override fun accumulate(value: Any?) {
+//    }
+//}
+
+class MaxAccumulator : Accumulator {
+
+    var value: Any? = null
+
+    override fun accumulate(value: Any?) {
+        println("Max accumulate $value")
+    }
+
+    override fun finalValue(): Any? {
+        return value
+    }
+}
+//
+//class SumAccumulator : Accumulator {
+//    override fun accumulate(value: Any?) {
+//    }
+//}
+//
+//class AvgAccumulator : Accumulator {
+//    override fun accumulate(value: Any?) {
+//    }
+//}
+//
+//class CountAccumulator : Accumulator {
+//    override fun accumulate(value: Any?) {
+//    }
+//}
+//
+//class CountDistinctAccumulator : Accumulator {
+//    override fun accumulate(value: Any?) {
+//    }
+//}

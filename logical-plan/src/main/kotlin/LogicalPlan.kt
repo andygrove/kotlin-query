@@ -18,8 +18,8 @@ interface LogicalPlan {
      * visitor pattern to walk a query tree.
      */
     fun children(): List<LogicalPlan>
-}
 
+}
 
 /** Format a logical plan in human-readable form */
 fun format(plan: LogicalPlan, indent: Int = 0): String {

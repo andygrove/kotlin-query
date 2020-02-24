@@ -15,9 +15,30 @@ class QueryPlanner {
      */
     fun createPhysicalPlan(plan: LogicalPlan) : PhysicalPlan {
         return when (plan) {
-            is Scan -> ScanExec(plan.dataSource, plan.projection)
-            is Selection -> SelectionExec(createPhysicalPlan(plan.input), createPhysicalExpr(plan.expr, plan.input))
-            is Projection -> ProjectionExec(createPhysicalPlan(plan.input), plan.schema(), plan.expr.map { createPhysicalExpr(it, plan.input) })
+            is Scan -> {
+                ScanExec(plan.dataSource, plan.projection)
+            }
+            is Selection -> {
+                val input = createPhysicalPlan(plan.input)
+                val filterExpr = createPhysicalExpr(plan.expr, plan.input)
+                SelectionExec(input, filterExpr)
+            }
+            is Projection -> {
+                val input = createPhysicalPlan(plan.input)
+                val projectionExpr = plan.expr.map { createPhysicalExpr(it, plan.input) }
+                ProjectionExec(input, plan.schema(), projectionExpr)
+            }
+            is Aggregate -> {
+                val input = createPhysicalPlan(plan.input)
+                val groupExpr = plan.groupExpr.map { createPhysicalExpr(it, plan.input) }
+                val aggregateExpr = plan.aggregateExpr.map {
+                    when (it) {
+                        is Max -> MaxPExpr(createPhysicalExpr(it.e, plan.input))
+                        else -> TODO()
+                    }
+                }
+                HashAggregateExec(input, groupExpr, aggregateExpr, plan.schema())
+            }
             else -> throw IllegalStateException(plan.javaClass.toString())
         }
     }
@@ -51,4 +72,5 @@ class QueryPlanner {
         //is And -> AndExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
         else -> throw IllegalStateException(expr.javaClass.toString())
     }
+
 }

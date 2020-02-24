@@ -1,68 +1,78 @@
 package io.andygrove.kquery.physical
 
+import io.andygrove.kquery.datasource.ArrowFieldVector
+import io.andygrove.kquery.datasource.ArrowVectorBuilder
 import io.andygrove.kquery.datasource.RecordBatch
+import org.apache.arrow.memory.RootAllocator
+import org.apache.arrow.vector.VectorSchemaRoot
+import org.apache.arrow.vector.types.pojo.Schema
 
-class HashAggregateExec(val input: PhysicalPlan, val groupExpr: List<PhysicalExpr>) : PhysicalPlan {
+class HashAggregateExec(val input: PhysicalPlan,
+                        val groupExpr: List<PhysicalExpr>,
+                        val aggregateExpr: List<PhysicalAggregateExpr>,
+                        val schema: Schema) : PhysicalPlan {
 
     override fun execute(): Iterable<RecordBatch> {
 
-        val map = HashMap<List<Any>, List<Accumulator>>()
+        val map = HashMap<List<Any?>, List<Accumulator>>()
 
         input.execute().iterator().forEach { batch ->
 
-            println(batch.toCSV())
+            println("HashAggregateExec input\n${batch.toCSV()}")
 
             // evaluate the grouping expressions
             val groupKeys = groupExpr.map { it.evaluate(batch) }
 
-            (0 until batch.rowCount()).forEach { rowIndex ->
-                //map.getOrPut()
-            }
+            // evaluate the expressions that are inputs to the aggregate functions
+            val aggrInputValues = aggregateExpr.map { it.inputExpression().evaluate(batch) }
 
-            //TODO accumulate
+            (0 until batch.rowCount()).forEach { rowIndex ->
+
+                val rowKey = groupKeys.map {
+                    val value = it.getValue(rowIndex)
+                    when (value) {
+                        is ByteArray -> String(value)
+                        else -> value
+                    }
+                }
+
+                println(rowKey)
+
+                // get or create accumulators for this grouping key
+                val accumulators = map.getOrPut(rowKey) {
+                    aggregateExpr.map { it.createAccumulator() }
+                }
+
+                // perform accumulation
+                accumulators.withIndex().forEach { accum ->
+                    accum.value.accumulate(aggrInputValues[accum.index].getValue(rowIndex))
+                }
+
+            }
         }
 
-        TODO()
-        //return RecordBatch()
+        val root = VectorSchemaRoot.create(schema, RootAllocator(Long.MAX_VALUE))
+        root.allocateNew()
+        root.rowCount = map.size
+
+        val builders = root.fieldVectors.map { ArrowVectorBuilder(it) }
+
+        map.entries.withIndex().forEach { entry ->
+            val rowIndex = entry.index
+            val groupingKey = entry.value.key
+            val accumulators = entry.value.value
+            groupExpr.indices.forEach {
+                builders[it].set(rowIndex, groupingKey[it])
+            }
+            aggregateExpr.indices.forEach {
+                builders[groupExpr.size+it].set(rowIndex, accumulators[it].finalValue())
+            }
+        }
+
+        val outputBatch = RecordBatch(schema, root.fieldVectors.map { ArrowFieldVector(it) })
+        println("HashAggregateExec output:\n${outputBatch.toCSV()}")
+        return listOf(outputBatch)
     }
+
 }
 
-interface Accumulator {
-    fun accumulate(value: Any?)
-}
-
-class MinAccumulator : Accumulator {
-    override fun accumulate(value: Any?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-}
-
-class MaxAccumulator : Accumulator {
-    override fun accumulate(value: Any?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-}
-
-class SumAccumulator : Accumulator {
-    override fun accumulate(value: Any?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-}
-
-class AvgAccumulator : Accumulator {
-    override fun accumulate(value: Any?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-}
-
-class CountAccumulator : Accumulator {
-    override fun accumulate(value: Any?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-}
-
-class CountDistinctAccumulator : Accumulator {
-    override fun accumulate(value: Any?) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-}
