@@ -1,5 +1,8 @@
 package io.andygrove.kquery
 
+import io.andygrove.kquery.datasource.CsvDataSource
+import io.andygrove.kquery.datasource.RecordBatch
+
 interface DataFrame {
 
     /** Apply a projection */

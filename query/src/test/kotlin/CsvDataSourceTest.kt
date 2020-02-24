@@ -1,10 +1,10 @@
 package io.andygrove.kquery
 
+import io.andygrove.kquery.datasource.CsvDataSource
 import org.apache.arrow.vector.VarCharVector
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.File
-import kotlin.test.assertEquals
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class CsvDataSourceTest {

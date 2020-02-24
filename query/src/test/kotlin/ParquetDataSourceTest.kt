@@ -1,5 +1,6 @@
 package io.andygrove.kquery
 
+import io.andygrove.kquery.datasource.ParquetDataSource
 import org.apache.arrow.vector.IntVector
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance

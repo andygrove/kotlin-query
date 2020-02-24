@@ -1,4 +1,4 @@
-package io.andygrove.kquery
+package io.andygrove.kquery.datasource
 
 import org.apache.arrow.vector.FieldVector
 import org.apache.arrow.vector.VarCharVector

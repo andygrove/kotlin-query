@@ -1,6 +1,6 @@
 package io.andygrove.kquery
 
-import org.junit.Ignore
+import io.andygrove.kquery.datasource.CsvDataSource
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 

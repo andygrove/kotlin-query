@@ -1,4 +1,4 @@
-package io.andygrove.kquery
+package io.andygrove.kquery.datasource
 
 import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.IntVector

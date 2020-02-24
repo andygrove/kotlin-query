@@ -1,9 +1,10 @@
 package io.andygrove.kquery
 
+import io.andygrove.kquery.datasource.DataSource
+import io.andygrove.kquery.datasource.RecordBatch
 import org.apache.arrow.memory.RootAllocator
 import org.apache.arrow.vector.*
 import org.apache.arrow.vector.types.pojo.Schema
-import java.lang.IllegalStateException
 import java.util.*
 
 /**

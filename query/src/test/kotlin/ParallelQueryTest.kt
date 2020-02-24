@@ -2,6 +2,7 @@ package io.andygrove.kquery
 
 //import kotlinx.coroutines.*
 
+import io.andygrove.kquery.datasource.RecordBatch
 import org.junit.Ignore
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
