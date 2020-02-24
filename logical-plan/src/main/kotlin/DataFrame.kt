@@ -8,6 +8,9 @@ interface DataFrame {
     /** Apply a filter */
     fun filter(expr: LogicalExpr): DataFrame
 
+    /** Aggregate */
+    fun aggregate(groupBy: List<LogicalExpr>, aggregateExpr: List<AggregateExpr>): DataFrame
+
     /** Get the logical plan */
     fun logicalPlan() : LogicalPlan
 
@@ -21,6 +24,10 @@ class DataFrameImpl(private val plan: LogicalPlan) : DataFrame {
 
     override fun filter(expr: LogicalExpr): DataFrame {
         return DataFrameImpl(Selection(plan, expr))
+    }
+
+    override fun aggregate(groupBy: List<LogicalExpr>, aggregateExpr: List<AggregateExpr>): DataFrame {
+        return DataFrameImpl(Aggregate(plan, groupBy, aggregateExpr))
     }
 
     override fun logicalPlan(): LogicalPlan {
