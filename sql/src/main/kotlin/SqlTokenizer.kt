@@ -2,70 +2,7 @@ package io.andygrove.kquery.sql
 
 import java.util.logging.Logger
 
-interface Token
 
-data class IdentifierToken(val text: String) : Token {
-    override fun toString(): String {
-        return text
-    }
-}
-
-abstract class TokenBase(val text: String) : Token {
-    override fun toString(): String {
-        return text
-    }
-
-    override fun hashCode(): Int {
-        return this.toString().hashCode()
-    }
-
-    override fun equals(other: Any?): Boolean {
-        return this.toString() == other.toString()
-    }
-}
-
-class LiteralStringToken(text: String) : TokenBase(text)
-class LiteralLongToken(text: String) : TokenBase(text)
-class LiteralDoubleToken(text: String) : TokenBase(text)
-class KeywordToken(text: String) : TokenBase(text)
-class OperatorToken(text: String) : TokenBase(text)
-class PunctuationToken(text: String) : TokenBase(text)
-
-class TokenStream(val tokens: List<Token>) {
-
-    private val logger = Logger.getLogger(TokenStream::class.simpleName)
-
-    var i = 0
-
-    fun peek(): Token? {
-        if (i < tokens.size) {
-            return tokens[i]
-        } else {
-            return null
-        }
-    }
-
-    fun next(): Token? {
-        if (i < tokens.size) {
-            return tokens[i++]
-        } else {
-            return null
-        }
-    }
-
-    fun consumeKeyword(s: String): Boolean {
-        val peek = peek()
-        logger.fine("consumeKeyword('$s') next token is $peek")
-        return if (peek == KeywordToken(s)) {
-            i++
-            logger.fine("consumeKeyword() returning true")
-            true
-        } else {
-            logger.fine("consumeKeyword() returning false")
-            false
-        }
-    }
-}
 
 class SqlTokenizer(val sql: String) {
 
