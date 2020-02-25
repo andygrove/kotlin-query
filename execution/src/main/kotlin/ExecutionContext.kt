@@ -37,12 +37,12 @@ class ExecutionContext {
     }
 
     /** Execute the logical plan represented by a DataFrame */
-    fun execute(df: DataFrame) : Iterable<RecordBatch> {
+    fun execute(df: DataFrame) : Sequence<RecordBatch> {
         return execute(df.logicalPlan())
     }
 
     /** Execute the provided logical plan */
-    private fun execute(plan: LogicalPlan) : Iterable<RecordBatch> {
+    private fun execute(plan: LogicalPlan) : Sequence<RecordBatch> {
         val physicalPlan = QueryPlanner().createPhysicalPlan(plan)
         return physicalPlan.execute()
     }

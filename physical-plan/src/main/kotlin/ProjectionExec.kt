@@ -9,7 +9,7 @@ import org.apache.arrow.vector.types.pojo.Schema
  */
 class ProjectionExec(val input: PhysicalPlan, val schema: Schema, val expr: List<PhysicalExpr>) : PhysicalPlan {
 
-    override fun execute(): Iterable<RecordBatch> {
+    override fun execute(): Sequence<RecordBatch> {
         return input.execute().map { batch ->
 
             println("projection input:\n${batch.toCSV()}")

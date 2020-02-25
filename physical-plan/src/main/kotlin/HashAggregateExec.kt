@@ -12,7 +12,7 @@ class HashAggregateExec(val input: PhysicalPlan,
                         val aggregateExpr: List<PhysicalAggregateExpr>,
                         val schema: Schema) : PhysicalPlan {
 
-    override fun execute(): Iterable<RecordBatch> {
+    override fun execute(): Sequence<RecordBatch> {
 
         val map = HashMap<List<Any?>, List<Accumulator>>()
 
@@ -71,7 +71,7 @@ class HashAggregateExec(val input: PhysicalPlan,
 
         val outputBatch = RecordBatch(schema, root.fieldVectors.map { ArrowFieldVector(it) })
         println("HashAggregateExec output:\n${outputBatch.toCSV()}")
-        return listOf(outputBatch)
+        return listOf(outputBatch).asSequence()
     }
 
 }

@@ -28,7 +28,7 @@ class CsvDataSource(filename: String, private val batchSize: Int) : DataSource {
         return schema
     }
 
-    override fun scan(columns: List<Int>): Iterable<RecordBatch> {
+    override fun scan(columns: List<Int>): Sequence<RecordBatch> {
         logger.info("scan()")
 
         //TODO don't ignore projection
@@ -39,7 +39,6 @@ class CsvDataSource(filename: String, private val batchSize: Int) : DataSource {
         return withoutHeader
                 .chunked(batchSize)
                 .map { createBatch(it) }
-                .asIterable()
     }
 
     private fun createBatch(rows: List<List<String>>) : RecordBatch {

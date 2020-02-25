@@ -9,6 +9,6 @@ interface DataSource {
     fun schema(): Schema
 
     /** Scan the data source, selecting the specified columns */
-    fun scan(columns: List<Int>): Iterable<RecordBatch>
+    fun scan(columns: List<Int>): Sequence<RecordBatch>
 }
 

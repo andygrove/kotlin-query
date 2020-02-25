@@ -11,7 +11,7 @@ interface PhysicalPlan {
     /**
      * Execute a physical plan and produce a series of record batches.
      */
-    fun execute(): Iterable<RecordBatch>
+    fun execute(): Sequence<RecordBatch>
 }
 
 

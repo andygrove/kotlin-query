@@ -14,7 +14,7 @@ import org.apache.arrow.vector.VectorSchemaRoot
  * Execute a selection.
  */
 class SelectionExec(val input: PhysicalPlan, val expr: PhysicalExpr) : PhysicalPlan {
-    override fun execute(): Iterable<RecordBatch> {
+    override fun execute(): Sequence<RecordBatch> {
         val input = input.execute()
         return input.map { batch ->
 

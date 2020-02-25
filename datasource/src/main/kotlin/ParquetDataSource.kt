@@ -23,7 +23,7 @@ class ParquetDataSource(private val filename: String) : DataSource {
         }
     }
 
-    override fun scan(columns: List<Int>): Iterable<RecordBatch> {
+    override fun scan(columns: List<Int>): Sequence<RecordBatch> {
         return ParquetScan(filename, columns)
     }
 
@@ -32,7 +32,7 @@ class ParquetDataSource(private val filename: String) : DataSource {
 /**
  * Based on blog post at https://www.arm64.ca/post/reading-parquet-files-java/
  */
-class ParquetScan(filename: String, private val columns: List<Int>) : AutoCloseable, Iterable<RecordBatch> {
+class ParquetScan(filename: String, private val columns: List<Int>) : AutoCloseable, Sequence<RecordBatch> {
 
     private val reader = ParquetFileReader.open(HadoopInputFile.fromPath(Path(filename), Configuration()))
     val schema = reader.footer.fileMetaData.schema
