@@ -1,7 +1,7 @@
 package io.andygrove.kquery.logical
 
 import io.andygrove.kquery.datasource.CsvDataSource
-import io.andygrove.kquery.optimizer.PredicatePushDownRule
+import io.andygrove.kquery.optimizer.ProjectionPushDownRule
 import org.junit.Test
 import org.junit.jupiter.api.TestInstance
 import kotlin.test.assertEquals
@@ -10,17 +10,35 @@ import kotlin.test.assertEquals
 class OptimizerTest {
 
     @Test
-    fun `predicate push down`() {
+    fun `projection push down`() {
 
         val df = csv()
                 .select(listOf(col("id"), col("first_name"), col("last_name")))
 
-        val rule = PredicatePushDownRule()
+        val rule = ProjectionPushDownRule()
         val optimizedPlan = rule.optimize(df.logicalPlan())
 
         val expected =
                 "Projection: #id, #first_name, #last_name\n" +
                 "\tScan: employee; projection=[first_name, id, last_name]\n"
+
+        assertEquals(expected, format(optimizedPlan))
+    }
+
+    @Test
+    fun `projection push down with selection`() {
+
+        val df = csv()
+                .filter(col("state") eq lit("CO"))
+                .select(listOf(col("id"), col("first_name"), col("last_name")))
+
+        val rule = ProjectionPushDownRule()
+        val optimizedPlan = rule.optimize(df.logicalPlan())
+
+        val expected =
+                "Projection: #id, #first_name, #last_name\n" +
+                "\tSelection: #state = 'CO'\n" +
+                "\t\tScan: employee; projection=[first_name, id, last_name, state]\n"
 
         assertEquals(expected, format(optimizedPlan))
     }
