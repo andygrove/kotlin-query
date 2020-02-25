@@ -29,7 +29,10 @@ fun extractColumns(expr: LogicalExpr, accum: MutableSet<String>) {
         }
         is Alias -> extractColumns(expr.expr, accum)
         is CastExpr -> extractColumns(expr.expr, accum)
-        else -> TODO()
+        is LiteralString -> {}
+        is LiteralLong -> {}
+        is LiteralDouble -> {}
+        else -> TODO(expr.javaClass.name)
     }
 }
 

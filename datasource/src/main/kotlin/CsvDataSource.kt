@@ -41,7 +41,10 @@ class CsvDataSource(private val filename: String, private val batchSize: Int) : 
 
         val projectionIndices = projection.map { name -> fileColumns.indexOfFirst { it.name == name } }
 
-        val schema = Schema(projectionIndices.map { fileColumns[it] })
+        val schema = when (projectionIndices.size) {
+            0 -> Schema(fileColumns)
+            else -> Schema(projectionIndices.map { fileColumns[it] })
+        }
 
         return ReaderAsSequence(schema, projectionIndices, b, batchSize)
     }
@@ -81,16 +84,20 @@ class ReaderIterator(private val schema: Schema,
     }
 
     override fun next(): RecordBatch {
-        return createBatch(schema, rows)
+        return createBatch(rows)
     }
 
     private fun parseLine(line: String, projection: List<Int>) : List<String> {
-        //TODO this could be implemented more efficiently
-        val splitLine = line.split(",")
-        return projection.map { splitLine[it] }.toList()
+        if (projection.isEmpty()) {
+            return line.split(",")
+        } else {
+            //TODO this could be implemented more efficiently
+            val splitLine = line.split(",")
+            return projection.map { splitLine[it] }.toList()
+        }
     }
 
-    private fun createBatch(schema: Schema, rows: List<List<String>>) : RecordBatch {
+    private fun createBatch(rows: List<List<String>>) : RecordBatch {
         logger.fine("createBatch() rows=$rows")
 
         val root = VectorSchemaRoot.create(schema, RootAllocator(Long.MAX_VALUE))
