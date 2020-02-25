@@ -207,6 +207,8 @@ infix fun LogicalExpr.alias(alias: String) : Alias {
  * Base interface for all aggregate expressions.
  */
 interface AggregateExpr {
+    
+    fun inputExpr(): LogicalExpr
 
     /**
      * Return meta-data about the value that will be produced by this expression when evaluated against
@@ -217,6 +219,10 @@ interface AggregateExpr {
 
 /** Base class for aggregate functions that are of the same type as the underlying expression */
 abstract class BaseAggregateExpr(val name: String, val e: LogicalExpr) : AggregateExpr {
+
+    override fun inputExpr(): LogicalExpr {
+        return e
+    }
 
     override fun toField(input: LogicalPlan): Field {
         return Field.nullable(name, e.toField(input).type)
@@ -230,43 +236,51 @@ abstract class BaseAggregateExpr(val name: String, val e: LogicalExpr) : Aggrega
 /**
  * Logical expression representing the SUM aggregate expression.
  */
-class Sum(e: LogicalExpr) : BaseAggregateExpr("SUM", e)
+class Sum(input: LogicalExpr) : BaseAggregateExpr("SUM", input)
 
 /**
  * Logical expression representing the MIN aggregate expression.
  */
-class Min(e: LogicalExpr) : BaseAggregateExpr("MIN", e)
+class Min(input: LogicalExpr) : BaseAggregateExpr("MIN", input)
 
 /**
  * Logical expression representing the MAX aggregate expression.
  */
-class Max(e: LogicalExpr) : BaseAggregateExpr("MAX", e)
+class Max(input: LogicalExpr) : BaseAggregateExpr("MAX", input)
 
 /**
  * Logical expression representing the AVG aggregate expression.
  */
-class Avg(e: LogicalExpr) : BaseAggregateExpr("AVG", e)
+class Avg(input: LogicalExpr) : BaseAggregateExpr("AVG", input)
 
 /** Logical expression representing the COUNT aggregate expression. */
-class Count(val e: LogicalExpr) : AggregateExpr {
+class Count(val input: LogicalExpr) : AggregateExpr {
+
+    override fun inputExpr(): LogicalExpr {
+        return input
+    }
 
     override fun toField(input: LogicalPlan): Field {
         return Field.nullable("COUNT", ArrowType.Int(32, false))
     }
 
     override fun toString(): String {
-        return "COUNT($e)"
+        return "COUNT($input)"
     }
 }
 
 /** Logical expression representing the COUNT DISTINCT aggregate expression. */
-class CountDistinct(val e: LogicalExpr) : AggregateExpr {
+class CountDistinct(val input: LogicalExpr) : AggregateExpr {
+
+    override fun inputExpr(): LogicalExpr {
+        return input
+    }
 
     override fun toField(input: LogicalPlan): Field {
         return Field.nullable("COUNT_DISTINCT", ArrowType.Int(32, false))
     }
 
     override fun toString(): String {
-        return "COUNT(DISTINCT $e)"
+        return "COUNT(DISTINCT $input)"
     }
 }

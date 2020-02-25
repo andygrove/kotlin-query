@@ -22,3 +22,4 @@ fun extractColumns(expr: LogicalExpr, accum: MutableSet<String>) {
         else -> {}
     }
 }
+

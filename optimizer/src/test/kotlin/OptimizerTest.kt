@@ -43,6 +43,20 @@ class OptimizerTest {
         assertEquals(expected, format(optimizedPlan))
     }
 
+    @Test
+    fun `projection push down with  aggregate query`() {
+
+        val df = csv()
+                .aggregate(listOf(col("state")), listOf(Min(col("salary")), Max(col("salary")), Count(col("salary"))))
+
+        val rule = ProjectionPushDownRule()
+        val optimizedPlan = rule.optimize(df.logicalPlan())
+
+        assertEquals(
+                "Aggregate: groupExpr=[#state], aggregateExpr=[MIN(#salary), MAX(#salary), COUNT(#salary)]\n" +
+                        "\tScan: employee; projection=[salary, state]\n", format(optimizedPlan))
+    }
+
     private fun csv() : DataFrame {
         val employeeCsv = "../testdata/employee.csv"
         return DataFrameImpl(Scan("employee", CsvDataSource(employeeCsv, 1024), listOf()))

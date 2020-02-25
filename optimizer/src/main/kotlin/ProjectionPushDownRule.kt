@@ -1,9 +1,6 @@
 package io.andygrove.kquery.optimizer
 
-import io.andygrove.kquery.logical.LogicalPlan
-import io.andygrove.kquery.logical.Projection
-import io.andygrove.kquery.logical.Scan
-import io.andygrove.kquery.logical.Selection
+import io.andygrove.kquery.logical.*
 
 class ProjectionPushDownRule : OptimizerRule {
 
@@ -19,11 +16,19 @@ class ProjectionPushDownRule : OptimizerRule {
         return when (plan) {
             is Projection -> {
                 extractColumns(plan.expr, columnNames)
-                Projection(pushDown(plan.input, columnNames), plan.expr)
+                val input = pushDown(plan.input, columnNames)
+                Projection(input, plan.expr)
             }
             is Selection -> {
                 extractColumns(plan.expr, columnNames)
-                Selection(pushDown(plan.input, columnNames), plan.expr)
+                val input = pushDown(plan.input, columnNames)
+                Selection(input, plan.expr)
+            }
+            is Aggregate -> {
+                extractColumns(plan.groupExpr, columnNames)
+                extractColumns(plan.aggregateExpr.map { it.inputExpr() }, columnNames)
+                val input = pushDown(plan.input, columnNames)
+                Aggregate(input, plan.groupExpr, plan.aggregateExpr)
             }
             is Scan -> Scan(plan.name, plan.dataSource, columnNames.toList().sorted())
             else -> TODO()
