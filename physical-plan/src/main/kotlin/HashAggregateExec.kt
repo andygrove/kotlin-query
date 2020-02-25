@@ -18,7 +18,7 @@ class HashAggregateExec(val input: PhysicalPlan,
 
         input.execute().iterator().forEach { batch ->
 
-            println("HashAggregateExec input\n${batch.toCSV()}")
+            //println("HashAggregateExec input\n${batch.toCSV()}")
 
             // evaluate the grouping expressions
             val groupKeys = groupExpr.map { it.evaluate(batch) }
@@ -36,7 +36,7 @@ class HashAggregateExec(val input: PhysicalPlan,
                     }
                 }
 
-                println(rowKey)
+                //println(rowKey)
 
                 // get or create accumulators for this grouping key
                 val accumulators = map.getOrPut(rowKey) {
@@ -70,7 +70,7 @@ class HashAggregateExec(val input: PhysicalPlan,
         }
 
         val outputBatch = RecordBatch(schema, root.fieldVectors.map { ArrowFieldVector(it) })
-        println("HashAggregateExec output:\n${outputBatch.toCSV()}")
+        //println("HashAggregateExec output:\n${outputBatch.toCSV()}")
         return listOf(outputBatch).asSequence()
     }
 

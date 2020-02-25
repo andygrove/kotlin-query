@@ -47,6 +47,26 @@ class CastPExpr(val expr: PhysicalExpr, val dataType: ArrowType.PrimitiveType) :
                 v.valueCount = value.size()
                 ArrowFieldVector(v)
             }
+            is ArrowType.FloatingPoint -> {
+                //TODO move this logic to separate source file
+                val v = Float8Vector("v", RootAllocator(Long.MAX_VALUE))
+                v.allocateNew()
+
+                val builder = ArrowVectorBuilder(v)
+                (0 until value.size()).forEach {
+                    val vv = value.getValue(it)
+                    if (vv == null) {
+                        builder.set(it, null)
+                    } else {
+                        when (vv) {
+                            is ByteArray -> builder.set(it, String(vv).toDouble())
+                            else -> TODO()
+                        }
+                    }
+                }
+                v.valueCount = value.size()
+                ArrowFieldVector(v)
+            }
             else -> TODO()
         }
     }
@@ -124,7 +144,7 @@ class MultExpr(l: PhysicalExpr, r: PhysicalExpr): BinaryPExpr(l,r) {
 //                (0 until l.valueCount).forEach {
 //                    val leftValue = l.get(it)
 //                    val rightValue = rr.get(it)
-//                    //println("${String(leftValue)} == ${String(rightValue)} ?")
+//                    ////println("${String(leftValue)} == ${String(rightValue)} ?")
 //                    v.set(it, leftValue.toDouble() * rightValue)
 //                }
 //            }
@@ -186,12 +206,24 @@ class MaxAccumulator : Accumulator {
 
     override fun accumulate(value: Any?) {
         //TODO this is hard coded for Int
-        println("Max accumulate $value")
+        //TODO generics?
+        //println("Max accumulate $value")
         if (value != null) {
             if (this.value == null) {
                 this.value = value
-            } else if (value as Int > this.value as Int) {
-                this.value = value
+            } else {
+                when (value) {
+                    is Int -> {
+                        if (value > this.value as Int) {
+                            this.value = value
+                        }
+                    }
+                    is Double -> {
+                        if (value > this.value as Double) {
+                            this.value = value
+                        }
+                    }
+                }
             }
         }
     }

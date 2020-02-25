@@ -12,12 +12,12 @@ class ProjectionExec(val input: PhysicalPlan, val schema: Schema, val expr: List
     override fun execute(): Sequence<RecordBatch> {
         return input.execute().map { batch ->
 
-            println("projection input:\n${batch.toCSV()}")
+            //println("projection input:\n${batch.toCSV()}")
 
             val fieldVectors = expr.map { it.evaluate(batch) }
             val projectedBatch = RecordBatch(schema, fieldVectors)
 
-            println("projection output:\n${projectedBatch.toCSV()}")
+            //println("projection output:\n${projectedBatch.toCSV()}")
 
             projectedBatch
         }

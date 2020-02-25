@@ -25,7 +25,7 @@ class CsvDataSource(private val filename: String, private val batchSize: Int) : 
     private val logger = Logger.getLogger(CsvDataSource::class.simpleName)
 
     override fun schema(): Schema {
-        logger.info("schema()")
+        logger.fine("schema()")
         val b = BufferedReader(FileReader(filename))
         val header = b.readLine().split(",")
         val schema = Schema(header.map { Field.nullable(it, ArrowType.Utf8()) })
@@ -33,7 +33,7 @@ class CsvDataSource(private val filename: String, private val batchSize: Int) : 
     }
 
     override fun scan(columns: List<Int>): Sequence<RecordBatch> {
-        logger.info("scan()")
+        logger.fine("scan()")
 
         val b = BufferedReader(FileReader(filename))
         val header = b.readLine().split(",")
@@ -81,7 +81,7 @@ class ReaderIterator(private val schema: Schema,
     }
 
     private fun createBatch(schema: Schema, rows: List<List<String>>) : RecordBatch {
-        logger.info("createBatch() rows=$rows")
+        logger.fine("createBatch() rows=$rows")
 
         val root = VectorSchemaRoot.create(schema, RootAllocator(Long.MAX_VALUE))
         root.allocateNew()
@@ -100,7 +100,7 @@ class ReaderIterator(private val schema: Schema,
 
         val batch = RecordBatch(schema, root.fieldVectors.map { ArrowFieldVector(it) })
 
-        logger.info("Created batch:\n${batch.toCSV()}")
+        logger.fine("Created batch:\n${batch.toCSV()}")
 
         return batch
     }
