@@ -32,29 +32,33 @@ class CsvDataSource(private val filename: String, private val batchSize: Int) : 
         return schema
     }
 
-    override fun scan(columns: List<String>): Sequence<RecordBatch> {
-        logger.fine("scan()")
+    override fun scan(projection: List<String>): Sequence<RecordBatch> {
+        logger.fine("scan() projection=$projection")
 
         val b = BufferedReader(FileReader(filename))
         val header = b.readLine().split(",")
-        val schema = Schema(header.map { Field.nullable(it, ArrowType.Utf8()) })
+        val fileColumns = header.map { Field.nullable(it, ArrowType.Utf8()) }.toList()
 
-        //TODO don't ignore projection
+        val projectionIndices = projection.map { name -> fileColumns.indexOfFirst { it.name == name } }
 
-        return ReaderAsSequence(schema, b, batchSize)
+        val schema = Schema(projectionIndices.map { fileColumns[it] })
+
+        return ReaderAsSequence(schema, projectionIndices, b, batchSize)
     }
 
 }
 
 class ReaderAsSequence(private val schema: Schema,
+                       private val projectionIndices: List<Int>,
                        private val r: BufferedReader,
                        private val batchSize: Int) : Sequence<RecordBatch> {
     override fun iterator(): Iterator<RecordBatch> {
-        return ReaderIterator(schema, r, batchSize)
+        return ReaderIterator(schema, projectionIndices, r, batchSize)
     }
 }
 
 class ReaderIterator(private val schema: Schema,
+                     private val projectionIndices: List<Int>,
                      private val r: BufferedReader,
                      private val batchSize: Int) : Iterator<RecordBatch> {
 
@@ -66,7 +70,7 @@ class ReaderIterator(private val schema: Schema,
         var list = mutableListOf<List<String>>()
         var line = r.readLine()
         while (line != null) {
-            list.add(line.split(","))
+            list.add(parseLine(line, projectionIndices))
             if (list.size == batchSize) {
                 break
             }
@@ -78,6 +82,12 @@ class ReaderIterator(private val schema: Schema,
 
     override fun next(): RecordBatch {
         return createBatch(schema, rows)
+    }
+
+    private fun parseLine(line: String, projection: List<Int>) : List<String> {
+        //TODO this could be implemented more efficiently
+        val splitLine = line.split(",")
+        return projection.map { splitLine[it] }.toList()
     }
 
     private fun createBatch(schema: Schema, rows: List<List<String>>) : RecordBatch {

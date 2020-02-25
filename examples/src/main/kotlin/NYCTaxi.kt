@@ -1,8 +1,9 @@
-import io.andygrove.kquery.datasource.CsvDataSource
 import io.andygrove.kquery.execution.ExecutionContext
 import io.andygrove.kquery.logical.Max
 import io.andygrove.kquery.logical.cast
 import io.andygrove.kquery.logical.col
+import io.andygrove.kquery.logical.format
+import io.andygrove.kquery.optimizer.Optimizer
 import org.apache.arrow.vector.types.FloatingPointPrecision
 import org.apache.arrow.vector.types.pojo.ArrowType
 import kotlin.system.measureTimeMillis
@@ -41,7 +42,13 @@ fun main() {
                         listOf(col("passenger_count")),
                         listOf(Max(cast(col("fare_amount"), ArrowType.FloatingPoint(FloatingPointPrecision.DOUBLE)))))
 
-        val results = ctx.execute(df)
+        println("Logical Plan:\t${format(df.logicalPlan())}")
+
+        val optimizedPlan = Optimizer().optimize(df.logicalPlan())
+
+        println("Optimized Plan:\t${format(optimizedPlan)}")
+
+        val results = ctx.execute(optimizedPlan)
 
         results.forEach {
             println(it.schema)

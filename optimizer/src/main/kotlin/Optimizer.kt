@@ -2,10 +2,19 @@ package io.andygrove.kquery.optimizer
 
 import io.andygrove.kquery.logical.*
 
+class Optimizer() {
+
+    fun optimize(plan: LogicalPlan) : LogicalPlan {
+        // note there is only one rule implemented so far but later there will be a list
+        val rule = ProjectionPushDownRule()
+        return rule.optimize(plan)
+    }
+
+}
+
 interface OptimizerRule {
     fun optimize(plan: LogicalPlan) : LogicalPlan
 }
-
 
 fun extractColumns(expr: List<LogicalExpr>, accum: MutableSet<String>) {
     expr.forEach { extractColumns(it, accum) }
@@ -19,7 +28,8 @@ fun extractColumns(expr: LogicalExpr, accum: MutableSet<String>) {
             extractColumns(expr.r, accum)
         }
         is Alias -> extractColumns(expr.expr, accum)
-        else -> {}
+        is CastExpr -> extractColumns(expr.expr, accum)
+        else -> TODO()
     }
 }
 

@@ -6,6 +6,7 @@ plugins {
 dependencies {
     implementation(project(":datasource"))
     implementation(project(":logical-plan"))
+    implementation(project(":optimizer"))
     implementation(project(":physical-plan"))
     implementation(project(":sql"))
     implementation(project(":execution"))

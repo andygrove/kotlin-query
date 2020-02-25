@@ -42,7 +42,7 @@ class ExecutionContext {
     }
 
     /** Execute the provided logical plan */
-    private fun execute(plan: LogicalPlan) : Sequence<RecordBatch> {
+    fun execute(plan: LogicalPlan) : Sequence<RecordBatch> {
         val physicalPlan = QueryPlanner().createPhysicalPlan(plan)
         return physicalPlan.execute()
     }
