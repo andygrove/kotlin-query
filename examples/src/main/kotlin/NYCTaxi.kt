@@ -9,9 +9,14 @@ fun main() {
 
     // wget https://s3.amazonaws.com/nyc-tlc/trip+data/yellow_tripdata_2019-01.csv
 
-    val df = ctx.csv("yellow_tripdata_2019-01.csv", 1024)
+    val df = ctx.csv("/home/andy/data/yellow_tripdata_2019-01.csv", 1024)
            // .aggregate(listOf(col("")), listOf())
 
     val results = ctx.execute(df)
+
+    results.forEach {
+        println(it.schema)
+        println(it.toCSV())
+    }
 
 }
