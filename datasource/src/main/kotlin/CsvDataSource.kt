@@ -32,7 +32,7 @@ class CsvDataSource(private val filename: String, private val batchSize: Int) : 
         return schema
     }
 
-    override fun scan(columns: List<Int>): Sequence<RecordBatch> {
+    override fun scan(columns: List<String>): Sequence<RecordBatch> {
         logger.fine("scan()")
 
         val b = BufferedReader(FileReader(filename))

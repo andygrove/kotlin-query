@@ -195,7 +195,7 @@ interface Accumulator {
     fun finalValue(): Any?
 }
 
-//class MinAccumulator : Accumulator {
+//class MinAccumulator : Accumulator {I thi
 //    override fun accumulate(value: Any?) {
 //    }
 //}
@@ -205,9 +205,6 @@ class MaxAccumulator : Accumulator {
     var value: Any? = null
 
     override fun accumulate(value: Any?) {
-        //TODO this is hard coded for Int
-        //TODO generics?
-        //println("Max accumulate $value")
         if (value != null) {
             if (this.value == null) {
                 this.value = value
