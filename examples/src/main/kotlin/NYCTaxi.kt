@@ -48,7 +48,8 @@ fun main() {
 
         println("Optimized Plan:\t${format(optimizedPlan)}")
 
-        val results = ctx.execute(optimizedPlan)
+        val results = ctx.execute(df.logicalPlan())
+        //val results = ctx.execute(optimizedPlan)
 
         results.forEach {
             println(it.schema)

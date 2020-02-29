@@ -114,11 +114,29 @@ abstract class BinaryExpr(val name: String,
     }
 }
 
-/** Boolean expressions are binary expressions that return a boolean type */
-abstract class BooleanExpr(name: String,
-                           op: String,
-                           l: LogicalExpr,
-                           r: LogicalExpr) : BinaryExpr(name, op, l, r) {
+abstract class UnaryExpr(val name: String,
+                          val op: String,
+                          val expr: LogicalExpr) : LogicalExpr{
+
+    override fun toString(): String {
+        return "$op $expr"
+    }
+}
+
+/** Logical expression representing a logical NOT */
+class Not(expr: LogicalExpr): UnaryExpr("not", "NOT", expr) {
+
+    override fun toField(input: LogicalPlan): Field {
+        return Field.nullablePrimitive(name, ArrowType.Bool())
+    }
+
+}
+
+/** Binary expressions that return a boolean type */
+abstract class BooleanBinaryExpr(name: String,
+                                 op: String,
+                                 l: LogicalExpr,
+                                 r: LogicalExpr) : BinaryExpr(name, op, l, r) {
 
     override fun toField(input: LogicalPlan): Field {
         return Field.nullablePrimitive(name, ArrowType.Bool())
@@ -127,28 +145,28 @@ abstract class BooleanExpr(name: String,
 }
 
 /** Logical expression representing a logical AND */
-class And(l: LogicalExpr, r: LogicalExpr): BooleanExpr("and", "AND", l, r)
+class And(l: LogicalExpr, r: LogicalExpr): BooleanBinaryExpr("and", "AND", l, r)
 
 /** Logical expression representing a logical AND */
-class Or(l: LogicalExpr, r: LogicalExpr): BooleanExpr("or", "OR", l, r)
+class Or(l: LogicalExpr, r: LogicalExpr): BooleanBinaryExpr("or", "OR", l, r)
 
 /** Logical expression representing an equality (`=`) comparison */
-class Eq(l: LogicalExpr, r: LogicalExpr): BooleanExpr("eq", "=", l, r)
+class Eq(l: LogicalExpr, r: LogicalExpr): BooleanBinaryExpr("eq", "=", l, r)
 
 /** Logical expression representing an inequality (`!=`) comparison */
-class Neq(l: LogicalExpr, r: LogicalExpr): BooleanExpr("neq", "!=", l, r)
+class Neq(l: LogicalExpr, r: LogicalExpr): BooleanBinaryExpr("neq", "!=", l, r)
 
 /** Logical expression representing a greater than (`>`) comparison */
-class Gt(l: LogicalExpr, r: LogicalExpr): BooleanExpr("gt", ">", l, r)
+class Gt(l: LogicalExpr, r: LogicalExpr): BooleanBinaryExpr("gt", ">", l, r)
 
 /** Logical expression representing a greater than or equals (`>=`) comparison */
-class GtEq(l: LogicalExpr, r: LogicalExpr): BooleanExpr("gteq", ">=", l, r)
+class GtEq(l: LogicalExpr, r: LogicalExpr): BooleanBinaryExpr("gteq", ">=", l, r)
 
 /** Logical expression representing a less than (`<`) comparison */
-class Lt(l: LogicalExpr, r: LogicalExpr): BooleanExpr("lt", "<", l, r)
+class Lt(l: LogicalExpr, r: LogicalExpr): BooleanBinaryExpr("lt", "<", l, r)
 
 /** Logical expression representing a less than or equals (`<=`) comparison */
-class LtEq(l: LogicalExpr, r: LogicalExpr): BooleanExpr("lteq", "<=", l, r)
+class LtEq(l: LogicalExpr, r: LogicalExpr): BooleanBinaryExpr("lteq", "<=", l, r)
 
 /** Convenience method to create an equality expression using an infix operator */
 infix fun LogicalExpr.eq(rhs: LogicalExpr): LogicalExpr { return Eq(this, rhs) }
@@ -168,22 +186,26 @@ infix fun LogicalExpr.lt(rhs: LogicalExpr): LogicalExpr { return Lt(this, rhs) }
 /** Convenience method to create a less than or equals expression using an infix operator */
 infix fun LogicalExpr.lteq(rhs: LogicalExpr): LogicalExpr { return LtEq(this, rhs) }
 
-class Mult(val l: LogicalExpr, val r: LogicalExpr) : LogicalExpr {
-
-    //TODO type checking
+abstract class MathExpr(name: String,
+                        op: String,
+                        l: LogicalExpr,
+                        r: LogicalExpr) : BinaryExpr(name, op, l, r) {
 
     override fun toField(input: LogicalPlan): Field {
         return Field.nullablePrimitive("mult", l.toField(input).type as ArrowType.PrimitiveType)
     }
 
-    override fun toString(): String {
-        return "$l * $r"
-    }
 }
 
+class Add(l: LogicalExpr, r: LogicalExpr) : MathExpr("add", "+", l, r)
+class Subtract(l: LogicalExpr, r: LogicalExpr) : MathExpr("subtract", "-", l, r)
+class Multiply(l: LogicalExpr, r: LogicalExpr) : MathExpr("mult", "*", l, r)
+class Divide(l: LogicalExpr, r: LogicalExpr) : MathExpr("div", "/", l, r)
+class Modulus(l: LogicalExpr, r: LogicalExpr) : MathExpr("mod", "%", l, r)
+
 /** Convenience method to create a multiplication expression using an infix operator */
-infix fun LogicalExpr.mult(rhs: LogicalExpr): Mult {
-    return Mult(this, rhs)
+infix fun LogicalExpr.mult(rhs: LogicalExpr): Multiply {
+    return Multiply(this, rhs)
 }
 
 
@@ -203,84 +225,58 @@ infix fun LogicalExpr.alias(alias: String) : Alias {
     return Alias(this, alias)
 }
 
-/**
- * Base interface for all aggregate expressions.
- */
-interface AggregateExpr {
-    
-    fun inputExpr(): LogicalExpr
-
-    /**
-     * Return meta-data about the value that will be produced by this expression when evaluated against
-     * a particular input.
-     */
-    fun toField(input: LogicalPlan): Field
-}
-
 /** Base class for aggregate functions that are of the same type as the underlying expression */
-abstract class BaseAggregateExpr(val name: String, val e: LogicalExpr) : AggregateExpr {
-
-    override fun inputExpr(): LogicalExpr {
-        return e
-    }
+abstract class AggregateExpr(val name: String, val expr: LogicalExpr) : LogicalExpr {
 
     override fun toField(input: LogicalPlan): Field {
-        return Field.nullable(name, e.toField(input).type)
+        return Field.nullable(name, expr.toField(input).type)
     }
 
     override fun toString(): String {
-        return "$name($e)"
+        return "$name($expr)"
     }
 }
 
 /**
  * Logical expression representing the SUM aggregate expression.
  */
-class Sum(input: LogicalExpr) : BaseAggregateExpr("SUM", input)
+class Sum(input: LogicalExpr) : AggregateExpr("SUM", input)
 
 /**
  * Logical expression representing the MIN aggregate expression.
  */
-class Min(input: LogicalExpr) : BaseAggregateExpr("MIN", input)
+class Min(input: LogicalExpr) : AggregateExpr("MIN", input)
 
 /**
  * Logical expression representing the MAX aggregate expression.
  */
-class Max(input: LogicalExpr) : BaseAggregateExpr("MAX", input)
+class Max(input: LogicalExpr) : AggregateExpr("MAX", input)
 
 /**
  * Logical expression representing the AVG aggregate expression.
  */
-class Avg(input: LogicalExpr) : BaseAggregateExpr("AVG", input)
+class Avg(input: LogicalExpr) : AggregateExpr("AVG", input)
 
 /** Logical expression representing the COUNT aggregate expression. */
-class Count(val input: LogicalExpr) : AggregateExpr {
-
-    override fun inputExpr(): LogicalExpr {
-        return input
-    }
+class Count(input: LogicalExpr) : AggregateExpr("COUNT", input) {
 
     override fun toField(input: LogicalPlan): Field {
         return Field.nullable("COUNT", ArrowType.Int(32, false))
     }
 
     override fun toString(): String {
-        return "COUNT($input)"
+        return "COUNT($expr)"
     }
 }
 
 /** Logical expression representing the COUNT DISTINCT aggregate expression. */
-class CountDistinct(val input: LogicalExpr) : AggregateExpr {
-
-    override fun inputExpr(): LogicalExpr {
-        return input
-    }
+class CountDistinct(input: LogicalExpr) : AggregateExpr("COUNT DISTINCT", input) {
 
     override fun toField(input: LogicalPlan): Field {
         return Field.nullable("COUNT_DISTINCT", ArrowType.Int(32, false))
     }
 
     override fun toString(): String {
-        return "COUNT(DISTINCT $input)"
+        return "COUNT(DISTINCT $expr)"
     }
 }

@@ -32,8 +32,11 @@ class OptimizerTest {
                 .filter(col("state") eq lit("CO"))
                 .select(listOf(col("id"), col("first_name"), col("last_name")))
 
+        println(format(df.logicalPlan()));
+
         val rule = ProjectionPushDownRule()
         val optimizedPlan = rule.optimize(df.logicalPlan())
+        println(format(optimizedPlan));
 
         val expected =
                 "Projection: #id, #first_name, #last_name\n" +

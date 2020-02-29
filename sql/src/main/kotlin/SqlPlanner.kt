@@ -91,10 +91,17 @@ class SqlPlanner {
                 "AND" -> And(createLogicalExpr(expr.l, input), createLogicalExpr(expr.r, input))
                 "OR" -> Or(createLogicalExpr(expr.l, input), createLogicalExpr(expr.r, input))
                 // math operators
-                "*" -> Mult(createLogicalExpr(expr.l, input), createLogicalExpr(expr.r, input))
+                "+" -> Add(createLogicalExpr(expr.l, input), createLogicalExpr(expr.r, input))
+                "-" -> Subtract(createLogicalExpr(expr.l, input), createLogicalExpr(expr.r, input))
+                "*" -> Multiply(createLogicalExpr(expr.l, input), createLogicalExpr(expr.r, input))
+                "/" -> Divide(createLogicalExpr(expr.l, input), createLogicalExpr(expr.r, input))
+                "%" -> Modulus(createLogicalExpr(expr.l, input), createLogicalExpr(expr.r, input))
                 //TODO add other math operations
                 else -> TODO("Binary operator ${expr.op}")
             }
+            //is SqlUnaryExpr -> when (expr.op) {
+            //"NOT" -> Not(createLogicalExpr(expr.l, input))
+            //}
             is SqlAlias -> Alias(createLogicalExpr(expr.expr, input), expr.alias.id)
             else -> TODO(expr.javaClass.toString())
         }

@@ -8,8 +8,6 @@ import java.sql.SQLException
  */
 class QueryPlanner {
 
-    //TODO optimization rules
-
     /**
      * Create a physical plan from a logical plan.
      */
@@ -33,7 +31,7 @@ class QueryPlanner {
                 val groupExpr = plan.groupExpr.map { createPhysicalExpr(it, plan.input) }
                 val aggregateExpr = plan.aggregateExpr.map {
                     when (it) {
-                        is Max -> MaxPExpr(createPhysicalExpr(it.e, plan.input))
+                        is Max -> MaxPExpr(createPhysicalExpr(it.expr, plan.input))
                         else -> TODO()
                     }
                 }
@@ -65,12 +63,23 @@ class QueryPlanner {
             ColumnPExpr(i)
         }
         is CastExpr -> CastPExpr(createPhysicalExpr(expr.expr, input), expr.dataType)
+
+        // comparision
         is Eq -> EqExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
         //TODO other comparison ops
-        is Mult -> MultExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
-        //TODO other math ops
-        //TODO boolean ops
+
+        // math
+//        is Add -> MultExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
+//        is Subtract -> MultExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
+//        is Multiply -> MultExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
+        is Divide -> MultExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
+//        is Modulus -> MultExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
+
+        // boolean
         //is And -> AndExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
+        //is Or -> AndExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
+        //is Not -> AndExpr(createPhysicalExpr(expr.l, input), createPhysicalExpr(expr.r, input))
+
         else -> TODO(expr.javaClass.toString())
     }
 
