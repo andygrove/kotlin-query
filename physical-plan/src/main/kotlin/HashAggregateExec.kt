@@ -9,7 +9,7 @@ import org.apache.arrow.vector.types.pojo.Schema
 
 class HashAggregateExec(val input: PhysicalPlan,
                         val groupExpr: List<PhysicalExpr>,
-                        val aggregateExpr: List<PhysicalAggregateExpr>,
+                        val aggregateExpr: List<AggregatePExpr>,
                         val schema: Schema) : PhysicalPlan {
 
     override fun execute(): Sequence<RecordBatch> {

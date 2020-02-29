@@ -116,6 +116,11 @@ class EqExpr(l: PhysicalExpr, r: PhysicalExpr): ComparisonPExpr(l,r) {
     }
 }
 
+/**
+ * For binary expressions we need to evaluate the left and right input expressions and then evaluate the
+ * specific binary operator against those input values, so we can use this base class to simplify the
+ * implementation for each operator.
+ */
 abstract class BinaryPExpr(val l: PhysicalExpr, val r: PhysicalExpr) : PhysicalExpr {
     override fun evaluate(input: RecordBatch): ColumnVector {
         val ll = l.evaluate(input)
@@ -124,6 +129,21 @@ abstract class BinaryPExpr(val l: PhysicalExpr, val r: PhysicalExpr) : PhysicalE
     }
 
     abstract fun evaluate(l: ColumnVector, r: ColumnVector) : ColumnVector
+}
+
+class EqPExpr(l: PhysicalExpr, r: PhysicalExpr) : BinaryPExpr(l, r) {
+    override fun evaluate(l: ColumnVector, r: ColumnVector): ColumnVector {
+        val v = BitVector("v", RootAllocator(Long.MAX_VALUE))
+        v.allocateNew()
+        (0 until l.size()).forEach {
+            if (l.getValue(it) == r.getValue(it)) {
+                v.set(it, 1)
+            } else {
+                v.set(it, 0)
+            }
+        }
+        return ArrowFieldVector(v)
+    }
 }
 
 class MultExpr(l: PhysicalExpr, r: PhysicalExpr): BinaryPExpr(l,r) {
@@ -173,12 +193,12 @@ class LiteralStringPExpr(val value: String) : PhysicalExpr {
     }
 }
 
-interface PhysicalAggregateExpr {
+interface AggregatePExpr {
     fun inputExpression(): PhysicalExpr
     fun createAccumulator(): Accumulator
 }
 
-class MaxPExpr(private val expr: PhysicalExpr) : PhysicalAggregateExpr {
+class MaxPExpr(private val expr: PhysicalExpr) : AggregatePExpr {
 
     override fun inputExpression(): PhysicalExpr {
         return expr

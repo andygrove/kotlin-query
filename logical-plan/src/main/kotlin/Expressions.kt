@@ -204,8 +204,28 @@ class Divide(l: LogicalExpr, r: LogicalExpr) : MathExpr("div", "/", l, r)
 class Modulus(l: LogicalExpr, r: LogicalExpr) : MathExpr("mod", "%", l, r)
 
 /** Convenience method to create a multiplication expression using an infix operator */
-infix fun LogicalExpr.mult(rhs: LogicalExpr): Multiply {
+infix fun LogicalExpr.add(rhs: LogicalExpr): LogicalExpr {
+    return Add(this, rhs)
+}
+
+/** Convenience method to create a multiplication expression using an infix operator */
+infix fun LogicalExpr.subtract(rhs: LogicalExpr): LogicalExpr {
+    return Subtract(this, rhs)
+}
+
+/** Convenience method to create a multiplication expression using an infix operator */
+infix fun LogicalExpr.mult(rhs: LogicalExpr): LogicalExpr {
     return Multiply(this, rhs)
+}
+
+/** Convenience method to create a multiplication expression using an infix operator */
+infix fun LogicalExpr.div(rhs: LogicalExpr): LogicalExpr {
+    return Divide(this, rhs)
+}
+
+/** Convenience method to create a multiplication expression using an infix operator */
+infix fun LogicalExpr.mod(rhs: LogicalExpr): LogicalExpr {
+    return Modulus(this, rhs)
 }
 
 

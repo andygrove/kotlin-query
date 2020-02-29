@@ -1,6 +1,7 @@
-package io.andygrove.kquery.physical
+package io.andygrove.kquery.planner
 
 import io.andygrove.kquery.logical.*
+import io.andygrove.kquery.physical.*
 import java.sql.SQLException
 
 /**
