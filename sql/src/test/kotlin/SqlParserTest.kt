@@ -60,12 +60,22 @@ class SqlParserTest {
         assertEquals("employee", select.tableName)
     }
 
+    @Test
+    fun `parse SELECT with aggregates`() {
+        val select = parseSelect("SELECT state, MAX(salary) FROM employee GROUP BY state")
+        assertEquals(listOf(SqlIdentifier("state"), SqlFunction("MAX", listOf(SqlIdentifier("salary")))), select.projection)
+        assertEquals(listOf(SqlIdentifier("state")), select.groupBy)
+        assertEquals("employee", select.tableName)
+    }
+
     private fun parseSelect(sql: String) : SqlSelect {
         return parse(sql) as SqlSelect
     }
 
     private fun parse(sql: String) : SqlExpr? {
+        println("parse() $sql")
         val tokens = SqlTokenizer(sql).tokenize()
+        println(tokens)
         val parsedQuery = SqlParser(tokens).parse()
         println(parsedQuery)
         return parsedQuery

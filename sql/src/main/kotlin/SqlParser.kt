@@ -30,6 +30,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
                     else -> 0
                 }
             }
+            is LParenToken -> 70
             else -> 0
         }
         logger.fine("nextPrecedence($token) returning $precedence")
@@ -77,6 +78,16 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
                     else -> throw IllegalStateException("Unexpected infix token $token")
                 }
             }
+            is LParenToken -> {
+                if (left is SqlIdentifier) {
+                    tokens.next() // consume the token
+                    val args = parseExprList()
+                    assert(tokens.next() == RParenToken())
+                    SqlFunction(left.id, args)
+                } else {
+                    TODO()
+                }
+            }
             else -> throw IllegalStateException("Unexpected infix token $token")
         }
         logger.fine("parseInfix() returning $expr")
@@ -85,15 +96,26 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
 
     private fun parseSelect() : SqlSelect {
         val projection = parseExprList()
+
         if (tokens.consumeKeyword("FROM")) {
             val table = parseExpr() as SqlIdentifier
+
+            // parse optional WHERE clause
+            var filterExpr : SqlExpr? = null
             if (tokens.consumeKeyword("WHERE")) {
-                return SqlSelect(projection, parseExpr(), table.id)
-            } else {
-                return SqlSelect(projection, null, table.id)
+                filterExpr = parseExpr()
             }
+
+            // parse optional GROUP BY clause
+            var groupBy : List<SqlExpr> = listOf()
+            if (tokens.consumeKeywords(listOf("GROUP", "BY"))) {
+                groupBy = parseExprList()
+            }
+
+            return SqlSelect(projection, filterExpr, groupBy, table.id)
+
         } else {
-            throw IllegalStateException("Expected FROM keyword")
+            throw IllegalStateException("Expected FROM keyword, found ${tokens.peek()}")
         }
     }
 
@@ -104,7 +126,7 @@ class SqlParser(val tokens: TokenStream) : PrattParser {
         while (expr != null) {
             //logger.fine("parseExprList parsed $expr")
             list.add(expr)
-            if (tokens.peek() == PunctuationToken(",")) {
+            if (tokens.peek() == CommaToken()) {
                 tokens.next()
             } else {
                 break

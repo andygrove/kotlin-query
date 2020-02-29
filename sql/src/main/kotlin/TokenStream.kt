@@ -24,6 +24,17 @@ class TokenStream(val tokens: List<Token>) {
         }
     }
 
+    fun consumeKeywords(s: List<String>): Boolean {
+        val save = i
+        s.forEach { keyword ->
+            if (!consumeKeyword(keyword)) {
+                i = save
+                return false
+            }
+        }
+        return true
+    }
+
     fun consumeKeyword(s: String): Boolean {
         val peek = peek()
         logger.fine("consumeKeyword('$s') next token is $peek")
@@ -35,5 +46,15 @@ class TokenStream(val tokens: List<Token>) {
             logger.fine("consumeKeyword() returning false")
             false
         }
+    }
+
+    override fun toString(): String {
+        return tokens.withIndex().map { (index,token) ->
+            if (index == i) {
+                "*$token"
+            } else {
+                token.toString()
+            }
+        }.joinToString(" ")
     }
 }

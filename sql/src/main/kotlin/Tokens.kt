@@ -27,4 +27,7 @@ class LiteralLongToken(text: String) : TokenBase(text)
 class LiteralDoubleToken(text: String) : TokenBase(text)
 class KeywordToken(text: String) : TokenBase(text)
 class OperatorToken(text: String) : TokenBase(text)
-class PunctuationToken(text: String) : TokenBase(text)
+
+class CommaToken() : TokenBase(",")
+class LParenToken() : TokenBase("(")
+class RParenToken() : TokenBase(")")

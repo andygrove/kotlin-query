@@ -40,7 +40,15 @@ class SqlTokenizer(val sql: String) {
         // look for start of token
         if (sql[i] == ',') {
             i++
-            return PunctuationToken(",")
+            return CommaToken()
+
+        } else if (sql[i] == '(') {
+            i++
+            return LParenToken()
+
+        } else if (sql[i] == ')') {
+            i++
+            return RParenToken()
 
         } else if (isIdentifierStart(sql[i])) {
             val start = i

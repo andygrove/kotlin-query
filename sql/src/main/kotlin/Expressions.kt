@@ -28,17 +28,24 @@ data class SqlDouble(val value: Double) : SqlExpr {
     override fun toString() = "$value"
 }
 
+/** SQL function call */
+data class SqlFunction(val id: String, val args: List<SqlExpr>) : SqlExpr {
+    override fun toString() = id
+}
+
 /** SQL aliased expression */
 data class SqlAlias(val expr: SqlExpr, val alias: SqlIdentifier) : SqlExpr
 
 //TODO: support other expression types
 
-//data class Function() : SqlExpr
 //data class UnaryExpr() : SqlExpr
 //data class CastExpr() : SqlExpr
 
 
 interface SqlRelation : SqlExpr
 
-//TODO: GROUP BY, ORDER BY, LIMIT, OFFSET
-data class SqlSelect(val projection: List<SqlExpr>, val selection: SqlExpr?, val tableName: String) : SqlRelation
+//TODO: ORDER BY, LIMIT, OFFSET
+data class SqlSelect(val projection: List<SqlExpr>,
+                     val selection: SqlExpr?,
+                     val groupBy: List<SqlExpr>,
+                     val tableName: String) : SqlRelation
