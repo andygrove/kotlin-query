@@ -103,6 +103,10 @@ class SqlPlanner {
             //"NOT" -> Not(createLogicalExpr(expr.l, input))
             //}
             is SqlAlias -> Alias(createLogicalExpr(expr.expr, input), expr.alias.id)
+            is SqlFunction -> when(expr.id) {
+                "MAX" -> Max(createLogicalExpr(expr.args.first(), input))
+                else -> TODO()
+            }
             else -> TODO(expr.javaClass.toString())
         }
     }
