@@ -1,5 +1,9 @@
 # kotlin-query
 
+Note that this project has been archived and the source code is now in the Ballista repository.
+
+https://github.com/andygrove/ballista
+
 `kotlin-query` is an in-memory SQL query engine based on Apache Arrow. It supports both a DataFrame API and SQL.
 
 ## DataFrame Example
